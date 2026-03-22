@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wrestling Story — How to Play</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#ffd700;--red:#ff3333;--grn:#00ff88;--int:#aa44ff;--bg:#07070f;--panel:#0e0e1a;--bdr:#252535;--txt:#e0e0e0;--muted:#5a5a7a}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:'Press Start 2P',monospace;font-size:10px;line-height:1.6;min-height:100vh}
+/* SCANLINES */
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.08) 3px,rgba(0,0,0,.08) 4px);pointer-events:none;z-index:9999}
+
+/* NAV */
+nav{background:var(--panel);border-bottom:2px solid var(--gold);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+nav h1{color:var(--gold);font-size:clamp(9px,2vw,14px);text-shadow:0 0 12px var(--gold)}
+.nav-btns{display:flex;gap:8px}
+.nav-btn{background:transparent;border:2px solid var(--gold);color:var(--gold);font-family:'Press Start 2P',monospace;font-size:7px;padding:6px 12px;cursor:pointer;transition:all .12s;text-decoration:none;display:inline-block}
+.nav-btn:hover{background:var(--gold);color:#000}
+.nav-btn.red{border-color:var(--red);color:var(--red)}.nav-btn.red:hover{background:var(--red);color:#fff}
+.nav-btn.grn{border-color:var(--grn);color:var(--grn)}.nav-btn.grn:hover{background:var(--grn);color:#000}
+
+/* HERO */
+.hero{background:radial-gradient(ellipse at 50% 60%,#1a0035 0%,var(--bg) 70%);
+  padding:60px 24px;text-align:center;border-bottom:2px solid var(--bdr);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(45deg,transparent,transparent 40px,rgba(255,215,0,.015) 40px,rgba(255,215,0,.015) 80px)}
+.hero h2{font-size:clamp(18px,5vw,40px);color:var(--gold);
+  text-shadow:0 0 20px var(--gold),0 0 50px #ff8c00,4px 4px 0 #b8860b;
+  letter-spacing:4px;line-height:1.4;margin-bottom:16px;position:relative;z-index:1}
+.hero-sub{color:var(--red);font-size:clamp(7px,1.5vw,11px);margin-bottom:20px;position:relative;z-index:1}
+.hero-desc{color:var(--muted);font-size:clamp(6px,1.2vw,9px);max-width:600px;margin:0 auto;line-height:2.2;position:relative;z-index:1}
+.floating-rings{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.ring{position:absolute;border-radius:50%;border:2px solid;opacity:.06;animation:floatRing 8s infinite ease-in-out}
+@keyframes floatRing{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-20px) scale(1.05)}}
+
+/* SECTION TABS */
+.tab-bar{display:flex;gap:0;border-bottom:2px solid var(--bdr);background:var(--panel);overflow-x:auto}
+.tab{padding:12px 16px;font-size:clamp(6px,1.1vw,8px);color:var(--muted);cursor:pointer;
+  border-bottom:3px solid transparent;transition:all .15s;white-space:nowrap;user-select:none}
+.tab:hover{color:var(--txt)}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+
+/* SECTIONS */
+.section{display:none;padding:28px 24px;max-width:1000px;margin:0 auto}
+.section.active{display:block}
+
+/* CARDS */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin:16px 0}
+.card{background:var(--panel);border:2px solid var(--bdr);padding:14px;transition:border-color .15s}
+.card:hover{border-color:var(--gold)}
+.card-icon{font-size:32px;margin-bottom:10px}
+.card-title{color:var(--gold);font-size:clamp(7px,1.3vw,10px);margin-bottom:8px;letter-spacing:1px}
+.card-body{color:var(--muted);font-size:clamp(5px,1vw,7px);line-height:2.2}
+.card-body .hl{color:var(--txt)}
+.card-body .val{color:var(--gold)}
+
+/* TABLES */
+table{width:100%;border-collapse:collapse;margin:14px 0}
+th{background:var(--gold);color:#000;font-size:clamp(5px,.9vw,7px);padding:8px 10px;text-align:left;letter-spacing:1px}
+td{font-size:clamp(5px,.9vw,7px);padding:7px 10px;border-bottom:1px solid var(--bdr);color:var(--muted)}
+td .hl{color:var(--txt)}td .gold{color:var(--gold)}td .grn{color:var(--grn)}
+td .red{color:var(--red)}td .int{color:var(--int)}
+tr:hover td{background:rgba(255,215,0,.03)}
+
+/* SECTION HEADERS */
+.sec-title{color:var(--gold);font-size:clamp(10px,2vw,16px);text-shadow:0 0 12px var(--gold);
+  margin-bottom:6px;letter-spacing:2px;border-left:4px solid var(--gold);padding-left:12px}
+.sec-sub{color:var(--muted);font-size:clamp(6px,1.1vw,8px);margin-bottom:18px;padding-left:16px;line-height:2}
+.hint-box{background:rgba(255,215,0,.06);border:1px solid rgba(255,215,0,.3);
+  padding:12px 16px;margin:14px 0;font-size:clamp(6px,1.1vw,8px);color:var(--muted);line-height:2.2}
+.hint-box .label{color:var(--gold);display:block;margin-bottom:6px;font-size:clamp(6px,1.1vw,9px)}
+.warn-box{background:rgba(255,51,51,.06);border:1px solid rgba(255,51,51,.3);padding:12px 16px;margin:14px 0}
+.warn-box .label{color:var(--red);display:block;margin-bottom:6px}
+.good-box{background:rgba(0,255,136,.06);border:1px solid rgba(0,255,136,.3);padding:12px 16px;margin:14px 0}
+.good-box .label{color:var(--grn);display:block;margin-bottom:6px}
+
+/* STAT BARS */
+.stat-demo{display:flex;align-items:center;gap:10px;margin:6px 0}
+.stat-lbl{width:90px;font-size:6px;color:var(--muted);flex-shrink:0}
+.stat-bar-wrap{flex:1;background:#111;border:1px solid var(--bdr);height:8px}
+.stat-bar-fill{height:100%}
+
+/* STEP LIST */
+.steps{display:flex;flex-direction:column;gap:10px;margin:14px 0}
+.step{display:flex;gap:12px;align-items:flex-start}
+.step-num{background:var(--gold);color:#000;font-size:8px;padding:4px 8px;flex-shrink:0;min-width:28px;text-align:center}
+.step-txt{color:var(--muted);font-size:clamp(6px,1.1vw,8px);line-height:2;padding-top:2px}
+.step-txt .hl{color:var(--txt)}.step-txt .gold{color:var(--gold)}.step-txt .grn{color:var(--grn)}
+
+/* CHANCE CARD PREVIEW */
+.cc-preview{width:140px;border-radius:3px;padding:10px;display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+.cc-preview .ccp-cat{font-size:5px;letter-spacing:2px;padding:3px 6px;text-align:center;color:#000}
+.cc-preview .ccp-icon{font-size:28px;text-align:center}
+.cc-preview .ccp-title{font-size:6px;text-align:center;line-height:1.5}
+.cc-preview .ccp-eff{font-size:5px;text-align:center;padding:3px;border:1px solid}
+.cc-samples{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+
+/* SCORE FORMULA */
+.score-formula{background:var(--panel);border:2px solid var(--gold);padding:16px;margin:14px 0;font-family:'VT323',monospace;font-size:clamp(12px,2vw,18px);color:var(--gold);text-align:center;line-height:2}
+
+/* RESPONSIVE */
+@media(max-width:600px){.card-grid{grid-template-columns:1fr}.cc-samples{flex-direction:column}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <h1>🤼 WRESTLING STORY — HOW TO PLAY</h1>
+  <div class="nav-btns">
+    <a class="nav-btn grn" href="wrestling-story.html">▶ PLAY GAME</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="floating-rings">
+    <div class="ring" style="width:300px;height:300px;border-color:var(--gold);top:-50px;left:-80px;animation-delay:0s"></div>
+    <div class="ring" style="width:200px;height:200px;border-color:var(--red);top:20px;right:-40px;animation-delay:2s"></div>
+    <div class="ring" style="width:150px;height:150px;border-color:var(--grn);bottom:-30px;left:40%;animation-delay:4s"></div>
+  </div>
+  <h2>🤼 WRESTLING STORY</h2>
+  <div class="hero-sub">A CAREER MODE EXPERIENCE — ANCIENT CHINA EDITION</div>
+  <div class="hero-desc">
+    Build your wrestler from an unknown indie fighter into a World Champion.
+    Survive chance cards, answer Ancient China questions to boost your intelligence,
+    fight turn-based matches, earn money, and leave your mark on the Hall of Fame.
+  </div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <div class="tab active" onclick="showTab('overview')">🏠 OVERVIEW</div>
+  <div class="tab" onclick="showTab('stats')">📊 STATS</div>
+  <div class="tab" onclick="showTab('battle')">⚔️ BATTLE</div>
+  <div class="tab" onclick="showTab('chance')">🃏 CHANCE CARDS</div>
+  <div class="tab" onclick="showTab('intel')">🧠 INTELLIGENCE</div>
+  <div class="tab" onclick="showTab('money')">💰 MONEY & SHOP</div>
+  <div class="tab" onclick="showTab('career')">🗓 CAREER FLOW</div>
+  <div class="tab" onclick="showTab('scoring')">🏅 SCORING</div>
+  <div class="tab" onclick="showTab('hints')">💡 HINTS</div>
+</div>
+
+<!-- ═══════════════════════════════════════════ OVERVIEW -->
+<div id="tab-overview" class="section active">
+  <div class="sec-title">HOW THE GAME WORKS</div>
+  <div class="sec-sub">Wrestling Story is a career simulation game. Each playthrough lasts 25 weeks.</div>
+
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-txt"><span class="hl">CHOOSE A WRESTLER</span> — Each wrestler has unique stats and a special finisher move. Enter your name for the leaderboard.</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-txt"><span class="gold">FLIP A CHANCE CARD</span> — At the start of every week, you draw a Monopoly-style chance card. Life events happen — good AND bad. Your stats can go up or down!</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-txt"><span class="hl" style="color:var(--int)">ANSWER A QUESTION</span> — Every week you face an Ancient China question. Answer correctly to raise your INTELLIGENCE stat by +1.</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-txt"><span class="hl">PICK A MATCH OR TRAIN</span> — Choose from 3 opponents (or a title match!), or skip the match to train a stat. Training adds +1 to any stat of your choice.</div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-txt"><span class="gold">FIGHT!</span> — Turn-based battles using dice rolls + your stats. Pick the right moves. Win your match to earn money and XP.</div></div>
+    <div class="step"><div class="step-num">6</div><div class="step-txt"><span class="grn">SPEND MONEY</span> — Visit the Shop between matches to buy stat boosts, hire a manager, upgrade your finisher, or clear an injury.</div></div>
+    <div class="step"><div class="step-num">7</div><div class="step-txt"><span class="gold">WIN TITLES</span> — Rack up enough wins to qualify for title shots. Capture the Indie, Regional, National, and World titles.</div></div>
+    <div class="step"><div class="step-num">8</div><div class="step-txt"><span class="hl">SUBMIT YOUR SCORE</span> — After 25 weeks, your career ends. Submit your score to the Hall of Fame leaderboard!</div></div>
+  </div>
+
+  <div class="hint-box">
+    <span class="label">💡 THE BIG PICTURE</span>
+    Your final score is calculated from wins, title belts, money earned, level, and intelligence. 
+    The path to a high score = WIN often, EARN money, answer QUESTIONS correctly, and chase TITLES.
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">🗓</div>
+      <div class="card-title">25-WEEK SEASON</div>
+      <div class="card-body">Your career runs exactly <span class="hl">25 weeks</span>. After that, your final record is tallied and you can submit your score. Plan your training weeks wisely — every week counts!</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">⭐</div>
+      <div class="card-title">LEVELS & XP</div>
+      <div class="card-body">You earn XP from every match — win or lose. When you level up, you choose <span class="hl">+1 to any stat</span>. Higher levels also make opponents stronger to keep things fair.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">💾</div>
+      <div class="card-title">SAVE & LOAD</div>
+      <div class="card-body">Hit <span class="hl">SAVE</span> from the career hub to save to one of 3 slots. Load from the title screen. Your save includes everything — stats, money, titles, week number.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🏅</div>
+      <div class="card-title">LEADERBOARD</div>
+      <div class="card-body">Scores are stored locally. At game end, submit your score to the <span class="hl">Hall of Fame</span>. Click SCORES from the career hub anytime to see the rankings.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ STATS -->
+<div id="tab-stats" class="section">
+  <div class="sec-title">YOUR SIX STATS</div>
+  <div class="sec-sub">Every wrestler has 6 stats, each from 1 to 20. Stats affect everything — how hard you hit, how often you land moves, and how the story unfolds.</div>
+
+  <table>
+    <tr><th>STAT</th><th>WHAT IT DOES IN BATTLE</th><th>AFFECTS CHANCE CARDS</th><th>BEST FOR</th></tr>
+    <tr>
+      <td><span class="hl">💪 STRENGTH</span></td>
+      <td>Determines damage on STRIKE and POWER SLAM. Higher STR = bigger hits.</td>
+      <td>Can go up/down from Health events</td>
+      <td class="gold">Bruisers, powerhouses</td>
+    </tr>
+    <tr>
+      <td><span class="hl">⚡ SPEED</span></td>
+      <td>Used to land STRIKE and HIGH RISK moves. Faster wrestlers dodge more.</td>
+      <td>Can be hurt by injuries</td>
+      <td class="gold">Strikers, high flyers</td>
+    </tr>
+    <tr>
+      <td><span class="hl">🧠 TECHNIQUE</span></td>
+      <td>Powers GRAPPLE — both the roll to land it AND damage dealt. Very consistent.</td>
+      <td>Mentor cards can raise it</td>
+      <td class="gold">Technical wrestlers</td>
+    </tr>
+    <tr>
+      <td><span class="hl">❤️ STAMINA</span></td>
+      <td>Determines your MAX HP. Also powers the RECOVER move. Higher STA = more health.</td>
+      <td>Injuries reduce it. Training boosts it.</td>
+      <td class="gold">Tanks, endurance fighters</td>
+    </tr>
+    <tr>
+      <td><span class="hl">🌟 CHARISMA</span></td>
+      <td>Powers your FINISHER move — both landing it AND the damage. Crowd energy matters!</td>
+      <td>Promos, marriage, social events</td>
+      <td class="gold">Fan favorites, crowd pleasers</td>
+    </tr>
+    <tr>
+      <td><span class="int">🔮 INTELLIGENCE</span></td>
+      <td>Unlocks SMART COUNTER at INT 10+. Gives +2 to all TEC rolls at INT 15+.</td>
+      <td>Raised ONLY by answering questions correctly</td>
+      <td class="int">Every wrestler — study up!</td>
+    </tr>
+  </table>
+
+  <div class="hint-box">
+    <span class="label">💡 STAT TIP: MAX HP FORMULA</span>
+    Your HP = 80 + (STAMINA × 4). A wrestler with STA 20 has 160 HP. A wrestler with STA 5 has only 100 HP. Keep your stamina healthy!
+  </div>
+
+  <div class="warn-box">
+    <span class="label" style="color:var(--red)">⚠ STATS CAN DECREASE!</span>
+    <div style="font-size:6px;color:var(--muted);line-height:2.2">Chance cards, injuries, and life events can permanently reduce your stats. 
+    A knee injury drops SPD and STA. A bad week on the road drops STA and CHA. 
+    Stats can never go below 1. Always check your card effects before dismissing them!</div>
+  </div>
+
+  <div style="margin-top:20px">
+    <div class="card-title" style="color:var(--gold);margin-bottom:12px">EXAMPLE WRESTLER STAT SPREAD</div>
+    <div class="stat-demo"><div class="stat-lbl">STR 💪</div><div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:75%;background:#ff4444;height:100%"></div></div><div style="font-size:6px;color:var(--muted);margin-left:6px">15/20</div></div>
+    <div class="stat-demo"><div class="stat-lbl">SPD ⚡</div><div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:85%;background:#00ccff;height:100%"></div></div><div style="font-size:6px;color:var(--muted);margin-left:6px">17/20</div></div>
+    <div class="stat-demo"><div class="stat-lbl">TEC 🧠</div><div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:90%;background:#ffd700;height:100%"></div></div><div style="font-size:6px;color:var(--muted);margin-left:6px">18/20</div></div>
+    <div class="stat-demo"><div class="stat-lbl">STA ❤️</div><div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:60%;background:#00ff88;height:100%"></div></div><div style="font-size:6px;color:var(--muted);margin-left:6px">12/20</div></div>
+    <div class="stat-demo"><div class="stat-lbl">CHA 🌟</div><div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:80%;background:#ff88ff;height:100%"></div></div><div style="font-size:6px;color:var(--muted);margin-left:6px">16/20</div></div>
+    <div class="stat-demo"><div class="stat-lbl">INT 🔮</div><div class="stat-bar-wrap"><div class="stat-bar-fill" style="width:40%;background:#aa44ff;height:100%"></div></div><div style="font-size:6px;color:var(--muted);margin-left:6px">8/20 — Answer more questions!</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ BATTLE -->
+<div id="tab-battle" class="section">
+  <div class="sec-title">BATTLE SYSTEM</div>
+  <div class="sec-sub">Every match is turn-based. You pick a move, the dice roll, then the enemy automatically takes their turn. Repeat until someone's HP hits zero.</div>
+
+  <div class="hint-box">
+    <span class="label">🎲 HOW DICE ROLLS WORK</span>
+    Every move is a contest. Your roll = d20 + half your relevant stat. Enemy roll = d20 + half their stat. 
+    <strong style="color:var(--txt)">Whoever rolls higher wins the exchange.</strong> 
+    Roll 18-20 = CRITICAL HIT (1.5× damage)!
+  </div>
+
+  <table>
+    <tr><th>MOVE</th><th>ROLL USES</th><th>DAMAGE USES</th><th>SPECIAL</th><th>RISK</th></tr>
+    <tr>
+      <td><span class="hl">STRIKE</span></td><td>SPD</td><td>STR</td>
+      <td>Safe, reliable. Good first move.</td><td class="grn">None</td>
+    </tr>
+    <tr>
+      <td><span class="hl">POWER SLAM</span></td><td>STR</td><td>STR</td>
+      <td>Very high damage if it lands.</td><td class="red">20% fumble — you take damage instead!</td>
+    </tr>
+    <tr>
+      <td><span class="hl">GRAPPLE</span></td><td>TEC</td><td>TEC</td>
+      <td>Consistent. Great for TEC builds.</td><td class="grn">None</td>
+    </tr>
+    <tr>
+      <td><span class="hl">RECOVER</span></td><td>STA</td><td>STA (heals)</td>
+      <td>Restores your HP. No attack.</td><td class="grn">None — but you don't deal damage!</td>
+    </tr>
+    <tr>
+      <td><span class="hl">HIGH RISK</span></td><td>SPD</td><td>SPD</td>
+      <td>Huge damage potential.</td><td class="red">35% fumble — big self-damage risk!</td>
+    </tr>
+    <tr>
+      <td><span class="int">SMART COUNTER</span></td><td>INT</td><td>TEC</td>
+      <td>Unlocks at INT 10+. Unique to you.</td><td class="grn">None — powered by knowledge!</td>
+    </tr>
+    <tr>
+      <td><span class="gold">FINISHER ⚡</span></td><td>CHA</td><td>STR</td>
+      <td>One use per match. Most powerful move.</td><td class="grn">None — save it for the right moment!</td>
+    </tr>
+  </table>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">💥</div>
+      <div class="card-title">CRITICAL HITS</div>
+      <div class="card-body">If your attack roll is <span class="hl">18, 19, or 20</span>, you land a CRITICAL HIT dealing <span class="val">1.5×</span> normal damage. High rolls are everything!</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">💀</div>
+      <div class="card-title">FUMBLES</div>
+      <div class="card-body">Power Slam and High Risk can <span class="red">fumble</span> — you take self-damage instead of dealing it. Don't spam risky moves when your HP is low!</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🤖</div>
+      <div class="card-title">ENEMY AI</div>
+      <div class="card-body">Enemies use their finisher when below <span class="hl">30% HP</span> and try to heal when critically low. They also get stronger as your level increases.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📈</div>
+      <div class="card-title">MOMENTUM</div>
+      <div class="card-body">The yellow bar shows momentum. Landing hits gains momentum. Taking hits loses it. High momentum is a visual indicator that you're in control!</div>
+    </div>
+  </div>
+
+  <div class="hint-box">
+    <span class="label">💡 STRATEGY BY WRESTLER TYPE</span>
+    <div style="margin-top:6px;display:flex;flex-direction:column;gap:6px;font-size:6px;color:var(--muted);line-height:2">
+      <div>💪 <span style="color:var(--txt)">HIGH STR (Bruiser, Raging Rhino):</span> Spam Power Slam early, save your Finisher for when the enemy is under 40% HP.</div>
+      <div>🧠 <span style="color:var(--txt)">HIGH TEC (Ring Blade, Iron Maiden):</span> Grapple every turn — it uses TEC for both landing AND damage. Super consistent.</div>
+      <div>⚡ <span style="color:var(--txt)">HIGH SPD (Blue Shadow, Violet Vixen):</span> Strike often to build momentum. Use High Risk only when above 70% HP.</div>
+      <div>🌟 <span style="color:var(--txt)">HIGH CHA (Midnight Mauler):</span> Your Finisher deals massive damage. Survive long enough to use it, then clean up.</div>
+      <div>🔮 <span style="color:var(--txt)">INT 10+ (any wrestler):</span> Smart Counter is your secret weapon — uses INT to roll, TEC for damage, zero risk.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ CHANCE -->
+<div id="tab-chance" class="section">
+  <div class="sec-title">CHANCE CARDS</div>
+  <div class="sec-sub">Every week you flip a chance card — just like Monopoly! The deck has 50 unique cards across 6 categories. Cards are shuffled and never repeat until the full deck is used.</div>
+
+  <div class="cc-samples">
+    <div class="cc-preview" style="background:linear-gradient(180deg,#e6510022,#000);border:2px solid #e65100">
+      <div class="ccp-cat" style="background:#e65100">CAREER</div>
+      <div class="ccp-icon">📺</div>
+      <div class="ccp-title" style="color:#e65100">TV APPEARANCE</div>
+      <div class="ccp-eff" style="color:var(--grn);border-color:var(--grn)">+2 CHA +$500</div>
+    </div>
+    <div class="cc-preview" style="background:linear-gradient(180deg,#1565c022,#000);border:2px solid #1565c0">
+      <div class="ccp-cat" style="background:#1565c0">PERSONAL</div>
+      <div class="ccp-icon">💍</div>
+      <div class="ccp-title" style="color:#64b5f6">YOU GOT MARRIED!</div>
+      <div class="ccp-eff" style="color:var(--grn);border-color:var(--grn)">+2 CHA −$2,000</div>
+    </div>
+    <div class="cc-preview" style="background:linear-gradient(180deg,#b71c1c22,#000);border:2px solid #b71c1c">
+      <div class="ccp-cat" style="background:#b71c1c">HEALTH</div>
+      <div class="ccp-icon">🤕</div>
+      <div class="ccp-title" style="color:#ef9a9a">KNEE INJURY</div>
+      <div class="ccp-eff" style="color:var(--red);border-color:var(--red)">−1 SPD −1 STA</div>
+    </div>
+    <div class="cc-preview" style="background:linear-gradient(180deg,#1b5e2022,#000);border:2px solid #1b5e20">
+      <div class="ccp-cat" style="background:#1b5e20">MONEY</div>
+      <div class="ccp-icon">💰</div>
+      <div class="ccp-title" style="color:#81c784">SURPRISE INHERITANCE</div>
+      <div class="ccp-eff" style="color:var(--grn);border-color:var(--grn)">+$3,500</div>
+    </div>
+    <div class="cc-preview" style="background:linear-gradient(180deg,#6a1b9a22,#000);border:2px solid #6a1b9a">
+      <div class="ccp-cat" style="background:#6a1b9a">EDUCATION</div>
+      <div class="ccp-icon">📚</div>
+      <div class="ccp-title" style="color:var(--int)">HIRED A MENTOR</div>
+      <div class="ccp-eff" style="color:var(--int);border-color:var(--int)">+1 TEC +1 INT −$1K</div>
+    </div>
+    <div class="cc-preview" style="background:linear-gradient(180deg,#f57f1722,#000);border:2px solid #f57f17">
+      <div class="ccp-cat" style="background:#f57f17">COMMUNITY</div>
+      <div class="ccp-icon">⚡</div>
+      <div class="ccp-title" style="color:#ffcc02">BREAKOUT TRAINING WEEK</div>
+      <div class="ccp-eff" style="color:var(--grn);border-color:var(--grn)">+1 STR +1 SPD</div>
+    </div>
+  </div>
+
+  <table>
+    <tr><th>CATEGORY</th><th>COLOR</th><th>WHAT HAPPENS</th></tr>
+    <tr><td class="hl">🟠 CAREER</td><td>Orange</td><td>TV appearances, contract upgrades, promo disasters, suspensions, Match of the Night awards</td></tr>
+    <tr><td class="hl">🔵 PERSONAL LIFE</td><td>Blue</td><td>Marriage, baby, divorce, new relationships, house purchase, family health scares, birthday parties</td></tr>
+    <tr><td class="hl">🟢 MONEY</td><td>Green</td><td>Tax bills, investment payoffs, gambling losses, inheritances, car breakdowns, merch drops</td></tr>
+    <tr><td class="hl">🔴 HEALTH</td><td>Red</td><td>Knee injuries (−SPD −STA), surgeries, peak condition boosts, insomnia, yoga retreats</td></tr>
+    <tr><td class="hl">🟣 EDUCATION</td><td>Purple</td><td>Mentor hire (+TEC +INT), strategy workshops, online courses, mental blocks</td></tr>
+    <tr><td class="hl">🟡 COMMUNITY</td><td>Yellow</td><td>Viral moments, endorsement deals, arrests, bonus payouts, rough weeks on the road</td></tr>
+  </table>
+
+  <div class="warn-box">
+    <span class="label">⚠ CLICK THE CARD TO FLIP IT</span>
+    <div style="font-size:6px;color:var(--muted);line-height:2.2">The card starts face-down. Click it to flip and reveal what happened this week. 
+    The effect is applied automatically when the card flips. You cannot undo it!</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ INTEL -->
+<div id="tab-intel" class="section">
+  <div class="sec-title">🔮 INTELLIGENCE — ANCIENT CHINA</div>
+  <div class="sec-sub">Every week after your chance card, you face ONE question from the Ancient China unit. This is the only way to raise your INT stat.</div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">✓</div>
+      <div class="card-title">CORRECT ANSWER</div>
+      <div class="card-body">Answer correctly and your <span class="int">INT increases by +1</span>. You also see a full explanation of why that answer is correct.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">✗</div>
+      <div class="card-title">WRONG ANSWER</div>
+      <div class="card-body">INT stays the same. The correct answer is revealed with an explanation so you can learn for next time.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔮</div>
+      <div class="card-title">WHAT INT DOES</div>
+      <div class="card-body"><span class="int">INT 10+:</span> Unlocks the SMART COUNTER move in battle (no risk, INT roll, TEC damage).<br><br><span class="int">INT 15+:</span> Gives +2 to ALL TEC rolls passively — your grapples become much more accurate.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🃏</div>
+      <div class="card-title">SHUFFLED DECK</div>
+      <div class="card-body">30 questions are shuffled into a deck. You won't see the same question twice until all 30 have appeared. Study ALL the material!</div>
+    </div>
+  </div>
+
+  <div class="hint-box">
+    <span class="label">💡 TOPICS COVERED ON QUESTIONS</span>
+    <div style="margin-top:6px;display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:6px;color:var(--muted);line-height:2.2">
+      <div>• Shang, Zhou, and Qin dynasties<br>• Oracle Bones<br>• Confucianism (5 key relationships)<br>• Daoism and Yin & Yang<br>• Legalism and strict laws</div>
+      <div>• Shi Huangdi and the Great Wall<br>• Mandate of Heaven<br>• Filial Piety<br>• The Silk Road<br>• Sun Tzu and The Art of War</div>
+    </div>
+  </div>
+
+  <div class="good-box">
+    <span class="label">🌟 INT LEADERBOARD BONUS</span>
+    <div style="font-size:6px;color:var(--muted);line-height:2.2">Your final INT score contributes <strong style="color:var(--int)">INT × 10 points</strong> to your leaderboard score. 
+    A player with INT 20 gets 200 bonus points. This rewards students who study hard and answer correctly every week!</div>
+  </div>
+
+  <table>
+    <tr><th>INT LEVEL</th><th>WHAT IT UNLOCKS</th><th>LEADERBOARD POINTS</th></tr>
+    <tr><td>5 (START)</td><td>No special abilities yet</td><td class="int">+50 pts</td></tr>
+    <tr><td>10</td><td class="int">SMART COUNTER move unlocked in battle!</td><td class="int">+100 pts</td></tr>
+    <tr><td>15</td><td class="int">+2 to all TEC rolls (grapples land more often)</td><td class="int">+150 pts</td></tr>
+    <tr><td>20</td><td class="int">Maximum knowledge! Peak mental performance.</td><td class="int">+200 pts</td></tr>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════ MONEY -->
+<div id="tab-money" class="section">
+  <div class="sec-title">💰 MONEY & THE SHOP</div>
+  <div class="sec-sub">You earn money from every match. Win = full purse. Lose = 25% consolation. Spend money at the Shop between matches.</div>
+
+  <table>
+    <tr><th>MATCH TYPE</th><th>WIN PURSE RANGE</th><th>LOSS CONSOLATION</th></tr>
+    <tr><td>Regular Match</td><td class="grn">$400 – $900</td><td class="red">~$100 – $225</td></tr>
+    <tr><td>🔥 Rivalry Match</td><td class="grn">$900 – $1,800</td><td class="red">~$225 – $450</td></tr>
+    <tr><td>🏆 Title Match</td><td class="grn">$2,000 – $5,000</td><td class="red">~$500 – $1,250</td></tr>
+  </table>
+
+  <div class="hint-box">
+    <span class="label">🤵 MANAGER BONUS</span>
+    Hire a Manager from the shop for $3,000 and ALL future purses increase by 15%. 
+    If you win many title matches at the top tier, the manager pays for itself many times over.
+  </div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">💪</div>
+      <div class="card-title">STAT BOOSTS ($600 each)</div>
+      <div class="card-body">Buy +1 to STR, SPD, TEC, STA, or CHA. INT boosts ($400) also available — though answering questions is the free way to raise it.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🤵</div>
+      <div class="card-title">HIRE MANAGER ($3,000)</div>
+      <div class="card-body">+15% to every future match purse. One-time purchase. Essential if you're chasing World Title money.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔥</div>
+      <div class="card-title">FINISHER UPGRADE ($2,500)</div>
+      <div class="card-body">Your Finisher move now deals 1.5× base damage. The most powerful single move in the game just got deadlier.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🏥</div>
+      <div class="card-title">HEALTH INSURANCE ($1,800)</div>
+      <div class="card-body">Injury penalty is reduced to 12% chance on a loss instead of 25%. Injuries still hurt, but less often.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">💊</div>
+      <div class="card-title">RECOVERY TREATMENT ($800)</div>
+      <div class="card-body">Clears your current injury penalty immediately. If you're carrying an injury into a big match, this is worth every penny.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ CAREER -->
+<div id="tab-career" class="section">
+  <div class="sec-title">CAREER FLOW — WEEK BY WEEK</div>
+  <div class="sec-sub">Here's exactly what happens each week in order.</div>
+
+  <div class="steps">
+    <div class="step"><div class="step-num">A</div><div class="step-txt"><span class="gold">CHANCE CARD FLIP</span> — Click the face-down card to reveal your weekly life event. Effect applies immediately.</div></div>
+    <div class="step"><div class="step-num">B</div><div class="step-txt"><span class="int">ANCIENT CHINA QUESTION</span> — Answer correctly for +1 INT. Either way, you see the explanation and move on.</div></div>
+    <div class="step"><div class="step-num">C</div><div class="step-txt"><span class="hl">CAREER HUB</span> — See your player card, record, title status, and this week's match options. You can also SAVE or visit the SHOP.</div></div>
+    <div class="step"><div class="step-num">D</div><div class="step-txt"><span class="gold">CHOOSE: MATCH OR TRAIN</span> — Pick from 3 opponent cards (with estimated purses shown), or hit TRAIN to skip the match and boost a stat. Training also advances the week.</div></div>
+    <div class="step"><div class="step-num">E</div><div class="step-txt"><span class="hl">MATCH INTRO VIDEO</span> → <span class="hl">STORY CUTSCENES</span> → <span class="hl">RING ENTRANCE</span> → <span class="gold">MATCH!</span></div></div>
+    <div class="step"><div class="step-num">F</div><div class="step-txt"><span class="hl">POST-MATCH</span> — XP awarded, purse paid, injury chance applied (on losses). If you leveled up, choose a stat to upgrade!</div></div>
+    <div class="step"><div class="step-num">G</div><div class="step-txt"><span class="gold">NEXT WEEK</span> — Week counter goes up and the cycle repeats from Step A.</div></div>
+  </div>
+
+  <table>
+    <tr><th>TIER</th><th>WEEKS</th><th>WHAT CHANGES</th></tr>
+    <tr><td>Indie Circuit</td><td>1–7</td><td>Small venues. Lower purses. Build your record.</td></tr>
+    <tr><td>Regional Scene</td><td>8–15</td><td>Mid-size arenas. Rivalry matches become more common.</td></tr>
+    <tr><td>National Stage</td><td>16–24</td><td>Major venues. Higher purses. Title shots available.</td></tr>
+    <tr><td>World Stage</td><td>25+</td><td>The biggest stages. World Title match accessible.</td></tr>
+  </table>
+
+  <table>
+    <tr><th>TITLE</th><th>WINS NEEDED</th><th>LEADERBOARD BONUS</th></tr>
+    <tr><td>🥉 Indie Title</td><td>3 wins</td><td class="gold">+500 pts</td></tr>
+    <tr><td>🥈 Regional Title</td><td>6 wins</td><td class="gold">+500 pts</td></tr>
+    <tr><td>🥇 National Title</td><td>12 wins</td><td class="gold">+500 pts</td></tr>
+    <tr><td>🏆 World Title</td><td>20 wins</td><td class="gold">+500 pts</td></tr>
+  </table>
+
+  <div class="warn-box">
+    <span class="label">⚠ INJURY SYSTEM</span>
+    <div style="font-size:6px;color:var(--muted);line-height:2.2">
+      Losing a match has a <strong style="color:var(--red)">25% chance</strong> of giving you an injury penalty (reduced to 12% with Health Insurance).
+      An injured wrestler fights with <strong>−1 effective STA</strong> (less max HP) in the next match.
+      Buy Recovery Treatment from the Shop, or win your next match to shake it off.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ SCORING -->
+<div id="tab-scoring" class="section">
+  <div class="sec-title">🏅 HOW YOUR SCORE IS CALCULATED</div>
+  <div class="sec-sub">At the end of your 25-week career, your final score is calculated and submitted to the Hall of Fame.</div>
+
+  <div class="score-formula">
+    SCORE = (WINS × 100) + (TITLES × 500) + (MONEY ÷ 100) + (LEVEL × 50) + (INT × 10)
+  </div>
+
+  <table>
+    <tr><th>COMPONENT</th><th>FORMULA</th><th>MAX POSSIBLE</th><th>HOW TO MAXIMIZE</th></tr>
+    <tr><td class="gold">🏆 WINS</td><td>Wins × 100</td><td>~2,000 pts (20 wins)</td><td>Win every match. Chase rematches against rivals for bonus XP.</td></tr>
+    <tr><td class="gold">🎖 TITLES</td><td>Titles × 500</td><td>2,000 pts (all 4)</td><td>Win titles in order — Indie, Regional, National, World.</td></tr>
+    <tr><td class="grn">💰 MONEY</td><td>Money ÷ 100</td><td>~500 pts</td><td>Hire a Manager, fight title matches, win consistently.</td></tr>
+    <tr><td class="hl">⭐ LEVEL</td><td>Level × 50</td><td>~500 pts</td><td>Win matches to earn XP. Every level up gives a stat choice too.</td></tr>
+    <tr><td class="int">🔮 INT</td><td>INT × 10</td><td>200 pts (INT 20)</td><td>Answer EVERY question correctly. Study Ancient China!</td></tr>
+  </table>
+
+  <div class="good-box">
+    <span class="label">🌟 EXAMPLE HIGH SCORE BREAKDOWN</span>
+    <div style="font-size:6px;color:var(--muted);line-height:2.4">
+      20 wins × 100 = <strong style="color:var(--gold)">2,000 pts</strong><br>
+      All 4 titles × 500 = <strong style="color:var(--gold)">2,000 pts</strong><br>
+      $45,000 saved ÷ 100 = <strong style="color:var(--grn)">450 pts</strong><br>
+      Level 8 × 50 = <strong style="color:var(--txt)">400 pts</strong><br>
+      INT 18 × 10 = <strong style="color:var(--int)">180 pts</strong><br>
+      <strong style="color:var(--gold);font-size:8px">TOTAL ≈ 5,030 pts</strong>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ HINTS -->
+<div id="tab-hints" class="section">
+  <div class="sec-title">💡 TIPS & STRATEGIES</div>
+  <div class="sec-sub">Pro tips to maximize your score and career.</div>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon">📚</div>
+      <div class="card-title">STUDY BEFORE PLAYING</div>
+      <div class="card-body">Questions come from your actual class notes. Review Confucianism, Daoism, Legalism, the three dynasties, and key figures. INT is worth 10 pts per level!</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">💾</div>
+      <div class="card-title">SAVE OFTEN</div>
+      <div class="card-body">Save after every title win and any time your stats improve significantly. You can't undo chance cards, but you CAN reload a save if things go badly.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🎯</div>
+      <div class="card-title">CHASE TITLES FAST</div>
+      <div class="card-body">Title matches pay 2-5× more than regular matches AND give 500 leaderboard points. Get your wins up quickly so title opportunities appear early.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🤵</div>
+      <div class="card-title">BUY THE MANAGER EARLY</div>
+      <div class="card-body">$3,000 upfront, but +15% on every purse after. If you win 15 more matches averaging $1,200 each, the manager earns you an extra $2,700. Worth it!</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔮</div>
+      <div class="card-title">ANSWER EVERY QUESTION</div>
+      <div class="card-body">INT is the only free stat (via questions). Every other stat costs $600 in the shop or a training week. Getting to INT 15 gives you passive battle bonuses.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">⚡</div>
+      <div class="card-title">USE YOUR FINISHER WISELY</div>
+      <div class="card-body">The Finisher is one-use per match. Use it when the enemy is around 30-40% HP to guarantee the knockout. Don't waste it when the enemy is at full health.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">❤️</div>
+      <div class="card-title">RECOVER WHEN HURT</div>
+      <div class="card-body">If you're below 40% HP, consider using Recover instead of attacking. A healed wrestler who survives longer beats a reckless wrestler every time.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔥</div>
+      <div class="card-title">RIVALRY MATCHES PAY MORE</div>
+      <div class="card-body">Face the same opponent twice and your third fight becomes a Rivalry Match worth 2-3× normal pay AND bonus XP. Let a rivalry develop before settling the score!</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🏋</div>
+      <div class="card-title">TRAIN AT THE RIGHT TIME</div>
+      <div class="card-body">Training is best when: your weakest stat is holding you back, you have plenty of weeks left, or a title shot needs one more stat point to be competitive.</div>
+    </div>
+  </div>
+
+  <div class="hint-box" style="margin-top:20px">
+    <span class="label">🤼 WRESTLER QUICK GUIDE</span>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;font-size:6px;color:var(--muted);line-height:2">
+      <div>💙 <strong style="color:#64b5f6">Blue Shadow</strong> — Best move: STRIKE. SPD 18 lands moves constantly.<br>
+      💪 <strong style="color:#a1887f">Bruiser</strong> — Best move: POWER SLAM. STR 20 hits like a truck.<br>
+      🔥 <strong style="color:#ff7043">Crushing Wave</strong> — Balanced brawler. Mix STRIKE + GRAPPLE.<br>
+      🌿 <strong style="color:#81c784">Grim Reaper</strong> — Tank. High STA = lots of HP. Outlast opponents.</div>
+      <div>❤️ <strong style="color:#ef9a9a">Iron Maiden</strong> — Best move: GRAPPLE. TEC 18 is deadly.<br>
+      ⚡ <strong style="color:#ffcc02">Midnight Mauler</strong> — CHA 20 = the most powerful Finisher in the game.<br>
+      🦏 <strong style="color:#90a4ae">Raging Rhino</strong> — STA 20 = 160 HP. Hardest to kill.<br>
+      🧡 <strong style="color:#ff8a65">Razorclaw</strong> — Technical striker. Good mix of SPD and TEC.<br>
+      🖤 <strong style="color:#b0bec5">Ring Blade</strong> — TEC 19! Best grappler stat in the roster.<br>
+      💜 <strong style="color:#ce93d8">Violet Vixen</strong> — SPD 20! Fastest wrestler. Strike spam wins.</div>
+    </div>
+  </div>
+</div>
+
+<div style="background:var(--panel);border-top:2px solid var(--bdr);padding:16px 24px;text-align:center;margin-top:30px">
+  <div style="color:var(--muted);font-size:6px;margin-bottom:10px">WRESTLING STORY — ANCIENT CHINA EDITION — PCCSK12 SOCIAL STUDIES</div>
+  <a class="nav-btn grn" href="wrestling-story.html" style="font-size:9px;padding:10px 20px">▶ START YOUR CAREER NOW</a>
+</div>
+
+<script>
+function showTab(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  const sec=document.getElementById('tab-'+id);
+  if(sec)sec.classList.add('active');
+  event.target.classList.add('active');
+  window.scrollTo({top:document.querySelector('.tab-bar').offsetTop-60,behavior:'smooth'});
+}
+</script>
+</body>
+</html>

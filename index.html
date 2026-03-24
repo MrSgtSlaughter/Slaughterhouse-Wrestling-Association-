@@ -86,7 +86,7 @@ body{background:var(--bg);color:var(--txt);font-family:'Press Start 2P',monospac
 .si-ico{font-size:28px}.si-nm{font-size:clamp(6px,1vw,8px);color:var(--txt)}.si-desc{font-size:5px;color:var(--muted);line-height:1.8}.si-price{font-size:clamp(7px,1.2vw,9px);color:var(--grn)}.si-owned{font-size:6px;color:var(--gold)}
 #matchIntroScreen{flex-direction:column;align-items:center;justify-content:center;background:#000;position:relative}
 .skip-btn{position:absolute;bottom:20px;right:20px;z-index:10;font-size:6px;background:rgba(0,0,0,.7);border:1px solid var(--muted);color:var(--muted);font-family:'Press Start 2P',monospace;padding:6px 11px;cursor:pointer;transition:all .2s}.skip-btn:hover{color:var(--txt);border-color:var(--txt)}
-#weekStory{flex-direction:column;background:#000;overflow:hidden}
+#weekStory{flex-direction:column;background:#000;overflow:hidden;position:relative}
 .ws-hdr{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;border-bottom:2px solid var(--bdr);background:var(--panel);flex-shrink:0}.ws-wk{color:var(--gold);font-size:clamp(7px,1.2vw,9px);letter-spacing:3px}
 .ws-body{flex:1;position:relative;overflow:hidden}
 .story-slide{display:none;width:100%;height:100%;flex-direction:row;position:absolute;inset:0}.story-slide.active{display:flex}
@@ -284,6 +284,7 @@ body{background:var(--bg);color:var(--txt);font-family:'Press Start 2P',monospac
 </div>
 <!-- TRAINING VIDEO -->
 <div id="trainingVideoScreen" class="screen" style="position:relative">
+  <video id="pcBgVideo" src="pressconference.mp4" loop muted playsinline style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.22;pointer-events:none;z-index:0"></video>
   <video id="trainingVideo" src="" playsinline style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0" onended="onTrainingVideoDone()"></video>
   <div style="position:absolute;bottom:60px;left:50%;transform:translateX(-50%);color:var(--grn);font-size:clamp(10px,2vw,16px);text-shadow:0 0 20px var(--grn);z-index:10;text-align:center">&#127947; TRAINING WEEK</div>
   <button class="skip-btn" onclick="onTrainingVideoDone()">SKIP &#9658;&#9658;</button>
@@ -938,6 +939,15 @@ function renderSlide(idx){
   const glow=(s.w&&s.w.colors)?s.w.colors.p:'#ffd700';
   const body=document.getElementById('wsBody');body.innerHTML='';
   const slide=document.createElement('div');slide.className='story-slide active';
+  // Show/hide press conference background video
+  var pcVid=document.getElementById('pcBgVideo');
+  if(pcVid){
+    if(s.isPC){
+      pcVid.style.display='block';pcVid.currentTime=0;pcVid.play().catch(function(){});
+    } else {
+      pcVid.pause();pcVid.style.display='none';
+    }
+  }
   if(s.isPC){
     slide.style.background='linear-gradient(135deg,#0a0a1a 0%,#000 80%)';
     const cbHtml=s.pc.choices.map((c,i)=>'<button class="pc-choice-btn" onclick="pickPCChoice('+i+')">'+c.txt+'</button>').join('');
@@ -979,6 +989,8 @@ function skipStory(){clearInterval(twTimer);goToPreMatch();}
 // PRE MATCH
 // ================================================================
 function goToPreMatch(){
+  var pcVid=document.getElementById('pcBgVideo');
+  if(pcVid){pcVid.pause();pcVid.style.display='none';}
   const{opp,matchType}=G.pendingMatch;
   document.getElementById('vsPI').src=SPRITES[G.player.id];document.getElementById('vsPN').textContent=G.player.name;document.getElementById('vsPSt').textContent=G.player.style;
   document.getElementById('vsEI').src=SPRITES[opp.id];document.getElementById('vsEN').textContent=opp.name;document.getElementById('vsESt').textContent=opp.style;

@@ -659,7 +659,67 @@ const PRESS_SCENARIOS=[
   {setup:"A major publication wants an exclusive interview but it cuts into training.",choices:[
     {txt:"Skip training for the interview.",out:"Profile runs everywhere. +2 CHA, -1 STR.",apply:g=>{g.pStats.cha=cl(g.pStats.cha+2);g.pStats.str=cm(g.pStats.str-1);}},
     {txt:"Do both - shorter interview, shorter training.",out:"Balanced week. +1 CHA, +$400.",apply:g=>{g.pStats.cha=cl(g.pStats.cha+1);g.money+=400;}},
-    {txt:"Training comes first. No exceptions.",out:"Sharp going into the match. +1 STR, +1 SPD.",apply:g=>{g.pStats.str=cl(g.pStats.str+1);g.pStats.spd=cl(g.pStats.spd+1);}}]}
+    {txt:"Training comes first. No exceptions.",out:"Sharp going into the match. +1 STR, +1 SPD.",apply:g=>{g.pStats.str=cl(g.pStats.str+1);g.pStats.spd=cl(g.pStats.spd+1);}}]},
+  {setup:'A reporter asks you to comment on rumors that you have been taking shortcuts in training.',choices:[
+    {txt:'"I train harder than anyone in this business."',out:'Powerful response. Respect earned. +2 CHA.',apply:g=>{g.pStats.cha=cl(g.pStats.cha+2);}},
+    {txt:'Laugh it off and pivot to your next match.',out:'Smooth deflection. Crowd loves it. +1 CHA, +$300.',apply:g=>{g.pStats.cha=cl(g.pStats.cha+1);g.money+=300;}},
+    {txt:'Get defensive and storm off.',out:'Confirms the rumors in everyone\'s mind. -2 CHA, -1 INT.',apply:g=>{g.pStats.cha=cm(g.pStats.cha-2);g.pStats.int=cm(g.pStats.int-1);}}]},
+  {setup:'The press asks if you think the championship match is rigged in your opponent\'s favor.',choices:[
+    {txt:'"The only thing rigged is my opponent\'s confidence."',out:'Perfect line. Clip goes viral. +2 CHA, +$500.',apply:g=>{g.pStats.cha=cl(g.pStats.cha+2);g.money+=500;}},
+    {txt:'Accuse the promotion of favoritism directly.',out:'Bold but reckless. Fined immediately. -$1,500, +1 CHA.',apply:g=>{g.money=Math.max(0,g.money-1500);g.pStats.cha=cl(g.pStats.cha+1);}},
+    {txt:'Nervously agree and mention feeling disadvantaged.',out:'You look weak. Opponent gains psychological edge. -2 CHA, -1 TEC.',apply:g=>{g.pStats.cha=cm(g.pStats.cha-2);g.pStats.tec=cm(g.pStats.tec-1);}}]},
+  {setup:'A journalist reveals mid-conference that your opponent said you are afraid of them.',choices:[
+    {txt:'Stand up and say "Tell them I\'ll see them Sunday."',out:'Ice cold. Every camera in the room flashes. +3 CHA.',apply:g=>{g.pStats.cha=cl(g.pStats.cha+3);}},
+    {txt:'Calmly explain your record speaks for itself.',out:'Measured and professional. +1 CHA, +1 INT.',apply:g=>{g.pStats.cha=cl(g.pStats.cha+1);g.pStats.int=cl(g.pStats.int+1);}},
+    {txt:'Lose your temper and trash the podium.',out:'Security gets involved. You look unstable. -3 CHA, -$800.',apply:g=>{g.pStats.cha=cm(g.pStats.cha-3);g.money=Math.max(0,g.money-800);}}]},
+  {setup:'You are asked whether you plan to use any new moves this week that fans haven\'t seen.',choices:[
+    {txt:'"You\'ll find out Sunday. Buy a ticket."',out:'Built-in hype. Ticket sales mentioned. +2 CHA, +$400.',apply:g=>{g.pStats.cha=cl(g.pStats.cha+2);g.money+=400;}},
+    {txt:'Describe a brand new finisher you\'ve been perfecting.',out:'Fans are hyped. Extra time in the gym this week. +1 CHA, +1 TEC.',apply:g=>{g.pStats.cha=cl(g.pStats.cha+1);g.pStats.tec=cl(g.pStats.tec+1);}},
+    {txt:'Accidentally reveal your full strategy in detail.',out:'Your opponent watches the clip three times. -2 TEC, -1 CHA.',apply:g=>{g.pStats.tec=cm(g.pStats.tec-2);g.pStats.cha=cm(g.pStats.cha-1);}}]},
+  {setup:'The media asks how your family feels about the dangerous nature of your career.',choices:[
+    {txt:'"They are my reason for every win."',out:'Emotional moment. Crowd connects deeply. +3 CHA.',apply:g=>{g.pStats.cha=cl(g.pStats.cha+3);}},
+    {txt:'Keep it brief - "They support me fully."',out:'Clean and professional. Nothing lost or gained.',apply:g=>{}},
+    {txt:'Break down emotionally and go off-script.',out:'Humanizing but awkward. Press has a field day. -1 CHA, +1 INT.',apply:g=>{g.pStats.cha=cm(g.pStats.cha-1);g.pStats.int=cl(g.pStats.int+1);}}]},
+  {setup:'A reporter asks if you have any regrets about a controversial move from your last match that injured your opponent.',choices:[
+    {txt:'"It was a legal move. No apologies."',out:'Heat incoming. Fans divided. -1 CHA but respect from hardcores. +1 STR.',apply:g=>{g.pStats.cha=cm(g.pStats.cha-1);g.pStats.str=cl(g.pStats.str+1);}},
+    {txt:'Express genuine concern for their recovery.',out:'Shows class. Fan approval skyrockets. +2 CHA.',apply:g=>{g.pStats.cha=cl(g.pStats.cha+2);}},
+    {txt:'Blame the opponent for getting in the wrong position.',out:'Nobody buys it. Severe backlash. -3 CHA, -$600.',apply:g=>{g.pStats.cha=cm(g.pStats.cha-3);g.money=Math.max(0,g.money-600);}}]},
+  {setup:'You are offered a chance to address students at a local high school the morning of your match.',choices:[
+    {txt:'Go - it\'s worth being a role model.',out:'Kids are inspired. Story goes viral. +2 CHA, +1 INT.',apply:g=>{g.pStats.cha=cl(g.pStats.cha+2);g.pStats.int=cl(g.pStats.int+1);}},
+    {txt:'Send a signed jersey instead.',out:'Nice gesture. School appreciates it. +1 CHA.',apply:g=>{g.pStats.cha=cl(g.pStats.cha+1);}},
+    {txt:'Skip it - you need full focus for the match.',out:'Smart preparation. Match focus sharp. +1 TEC, +1 SPD.',apply:g=>{g.pStats.tec=cl(g.pStats.tec+1);g.pStats.spd=cl(g.pStats.spd+1);}}]},
+  {setup:'A rival cuts a promo during YOUR press conference by hacking the venue sound system.',choices:[
+    {txt:'Riff on it live - "Even the audio wants a piece of me."',out:'Crowd loses it. Instant legend moment. +3 CHA, +$700.',apply:g=>{g.pStats.cha=cl(g.pStats.cha+3);g.money+=700;}},
+    {txt:'Calmly wait for it to end and continue your conference.',out:'Composed under pressure. +1 CHA, +1 INT.',apply:g=>{g.pStats.cha=cl(g.pStats.cha+1);g.pStats.int=cl(g.pStats.int+1);}},
+    {txt:'Walk out in frustration.',out:'Rival wins this exchange without saying a word to you. -2 CHA.',apply:g=>{g.pStats.cha=cm(g.pStats.cha-2);}}]},
+  {setup:'You are asked about Ancient Chinese philosophy and how it influences your in-ring style.',choices:[
+    {txt:'"Sun Tzu said know your enemy. I know mine."',out:'Intellectual flex. Fans are impressed. +2 CHA, +2 INT.',apply:g=>{g.pStats.cha=cl(g.pStats.cha+2);g.pStats.int=cl(g.pStats.int+2);}},
+    {txt:'"I study Daoism - go with the flow until the right moment."',out:'Philosophical and mysterious. +1 CHA, +1 TEC, +1 INT.',apply:g=>{g.pStats.cha=cl(g.pStats.cha+1);g.pStats.tec=cl(g.pStats.tec+1);g.pStats.int=cl(g.pStats.int+1);}},
+    {txt:'Admit you have never heard of Sun Tzu.',out:'Awkward silence. Opponent tweets a meme about it immediately. -1 INT, -1 CHA.',apply:g=>{g.pStats.int=cm(g.pStats.int-1);g.pStats.cha=cm(g.pStats.cha-1);}}]},
+  {setup:'Management announces mid-conference that your match purse has been cut in half due to "budget restructuring."',choices:[
+    {txt:'Accept it publicly but negotiate hard in private later.',out:'Diplomatic. You recover $800 behind closed doors. +$800.',apply:g=>{g.money+=800;}},
+    {txt:'Call it out at the microphone in front of everyone.',out:'You get $500 back from embarrassed management but make enemies. +$500, -1 CHA.',apply:g=>{g.money+=500;g.pStats.cha=cm(g.pStats.cha-1);}},
+    {txt:'Quit the conference, storm to the GM office.',out:'Nuclear option. Huge fine. -$2,000 but +2 CHA from fans who love the drama.',apply:g=>{g.money=Math.max(0,g.money-2000);g.pStats.cha=cl(g.pStats.cha+2);}}]},
+  {setup:'A reporter asks you to predict the exact move you will use to finish the match.',choices:[
+    {txt:'"I\'ll know it when I see the opening. That\'s the art."',out:'Confident and mysterious. +1 CHA, +1 TEC.',apply:g=>{g.pStats.cha=cl(g.pStats.cha+1);g.pStats.tec=cl(g.pStats.tec+1);}},
+    {txt:'Name your finisher with full confidence.',out:'Sets up a huge pop if you deliver it. +2 CHA.',apply:g=>{g.pStats.cha=cl(g.pStats.cha+2);}},
+    {txt:'Name a move and then completely forget to set it up during the match.',out:'Fans remember. You did not deliver. -2 CHA, embarrassing.',apply:g=>{g.pStats.cha=cm(g.pStats.cha-2);}}]},
+  {setup:'The press discovers photos of you looking exhausted and out of shape from last weekend.',choices:[
+    {txt:'"Those photos were taken out of context. Watch Sunday."',out:'Classic redirect. Sets up a great comeback narrative. +1 CHA.',apply:g=>{g.pStats.cha=cl(g.pStats.cha+1);}},
+    {txt:'Own it - "I had a rough week but I am back."',out:'Fans respect the honesty. +2 CHA, -1 STA.',apply:g=>{g.pStats.cha=cl(g.pStats.cha+2);g.pStats.sta=cm(g.pStats.sta-1);}},
+    {txt:'Deny the photos are even you.',out:'A reporter pulls up the photos on their laptop right there. -3 CHA.',apply:g=>{g.pStats.cha=cm(g.pStats.cha-3);}}]},
+  {setup:'Your opponent shows up uninvited to your press conference and stands in the back, staring.',choices:[
+    {txt:'Invite them to the microphone. Let them say their piece.',out:'Confidence play. You own the room. +3 CHA.',apply:g=>{g.pStats.cha=cl(g.pStats.cha+3);}},
+    {txt:'Ignore them completely and stay focused.',out:'Ice cold composure. +1 CHA, +1 INT.',apply:g=>{g.pStats.cha=cl(g.pStats.cha+1);g.pStats.int=cl(g.pStats.int+1);}},
+    {txt:'Lose focus and stumble through the rest of the conference.',out:'They got exactly what they wanted. -2 CHA, -1 TEC.',apply:g=>{g.pStats.cha=cm(g.pStats.cha-2);g.pStats.tec=cm(g.pStats.tec-1);}}]},
+  {setup:'A reporter asks if winning this match would make you the greatest of all time in your promotion.',choices:[
+    {txt:'"Winning this match makes me the greatest of all time, period."',out:'GOAT talk goes everywhere. Massive heat and hype. +3 CHA.',apply:g=>{g.pStats.cha=cl(g.pStats.cha+3);}},
+    {txt:'"Ask me again on Monday."',out:'Perfect confidence without arrogance. +2 CHA, +$400.',apply:g=>{g.pStats.cha=cl(g.pStats.cha+2);g.money+=400;}},
+    {txt:'"I just want to do my best."',out:'Humble but forgettable. No one writes about this.',apply:g=>{}}]},
+  {setup:'Mid-conference, your microphone cuts out and the replacement takes three full minutes to arrive.',choices:[
+    {txt:'Entertain the crowd with physical comedy while waiting.',out:'Crowd is in tears laughing. Unexpected viral moment. +3 CHA.',apply:g=>{g.pStats.cha=cl(g.pStats.cha+3);}},
+    {txt:'Stand perfectly still and silent like an absolute menace.',out:'Intimidating. The silence says everything. +2 CHA.',apply:g=>{g.pStats.cha=cl(g.pStats.cha+2);}},
+    {txt:'Get visibly flustered and start muttering under your breath.',out:'Cameras catch everything. Memes by midnight. -2 CHA.',apply:g=>{g.pStats.cha=cm(g.pStats.cha-2);}}]}
 ];
 let pcDeck=[];
 function drawPressScenario(){

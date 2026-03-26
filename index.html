@@ -1563,3 +1563,172 @@ function buildStatUp(onDone){
     ch.appendChild(b);
   });
 }
+
+// ================================================================
+// SAVE / LOAD
+// ================================================================
+const SAVE_KEY='ws_saves';
+function getSaves(){try{return JSON.parse(localStorage.getItem(SAVE_KEY)||'[null,null,null]');}catch{return[null,null,null];}}
+function putSaves(arr){localStorage.setItem(SAVE_KEY,JSON.stringify(arr));}
+function saveGame(){
+  var saves=getSaves();
+  document.getElementById('saveModalTitle').textContent='SAVE GAME';
+  var sl=document.getElementById('saveSlots');sl.innerHTML='';
+  saves.forEach(function(sv,i){
+    var row=document.createElement('div');row.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid var(--bdr)';
+    row.innerHTML='<div style="font-size:6px;color:var(--muted)">SLOT '+(i+1)+': '+(sv?'<span style="color:var(--txt)">'+sv.playerName+' W'+sv.week+' '+sv.wins+'W/$'+(sv.money||0).toLocaleString()+'</span>':'<span style="color:#333">EMPTY</span>')+'</div>';
+    var btn=document.createElement('button');btn.className='btn';btn.style.cssText='font-size:6px;padding:5px 9px';btn.textContent='SAVE HERE';
+    btn.onclick=(function(idx){return function(){saves[idx]={...JSON.parse(JSON.stringify(G)),savedAt:new Date().toLocaleString()};putSaves(saves);toast('Saved to slot '+(idx+1)+'!','g');closeSaveModal();};})(i);
+    row.appendChild(btn);sl.appendChild(row);
+  });
+  document.getElementById('saveModal').classList.add('open');
+}
+function openLoadMenu(){
+  var saves=getSaves();
+  if(!saves.some(function(sv){return sv;})){toast('No saves found!','b');return;}
+  document.getElementById('saveModalTitle').textContent='LOAD GAME';
+  var sl=document.getElementById('saveSlots');sl.innerHTML='';
+  saves.forEach(function(sv,i){
+    var row=document.createElement('div');row.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid var(--bdr)';
+    if(sv){
+      row.innerHTML='<div style="font-size:6px;color:var(--muted)">SLOT '+(i+1)+': <span style="color:var(--txt)">'+sv.playerName+' \u2014 Week '+sv.week+' \u2014 $'+(sv.money||0).toLocaleString()+'</span><br><span style="font-size:5px">'+(sv.savedAt||'')+'</span></div>';
+      var btn=document.createElement('button');btn.className='btn btn-grn';btn.style.cssText='font-size:6px;padding:5px 9px';btn.textContent='LOAD';
+      btn.onclick=(function(save){return function(){Object.assign(G,JSON.parse(JSON.stringify(save)));closeSaveModal();toast('Game loaded!','g');setTimeout(function(){showCareerFlow();},300);};})(sv);
+      row.appendChild(btn);
+    }else{row.innerHTML='<div style="font-size:6px;color:#333">SLOT '+(i+1)+': EMPTY</div>';}
+    sl.appendChild(row);
+  });
+  document.getElementById('saveModal').classList.add('open');
+}
+function closeSaveModal(){document.getElementById('saveModal').classList.remove('open');}
+
+// ================================================================
+// SCORE + FIREBASE LEADERBOARD
+// ================================================================
+var FB_BASE='https://firestore.googleapis.com/v1/projects/minigolf-fd9ea/databases/(default)/documents/wrestling_story_scores';
+
+function fbVal(f){return f?Object.values(f)[0]:'';}
+function fbToEntry(doc){
+  var f=doc.fields||{};
+  return{name:fbVal(f.name)||'?',score:Number(fbVal(f.score))||0,wins:Number(fbVal(f.wins))||0,losses:Number(fbVal(f.losses))||0,titles:Number(fbVal(f.titles))||0,level:Number(fbVal(f.level))||1,int:Number(fbVal(f.int))||5,money:Number(fbVal(f.money))||0};
+}
+function calcScore(){
+  var lifestyleBonus=0;
+  var bonusMap={house:300,car:200,shoes:100,chain:150,watch:125,ring:175,glasses:50,mic:200,rock:75};
+  (G.upgrades||[]).forEach(function(u){if(bonusMap[u])lifestyleBonus+=bonusMap[u];});
+  var travisBonus=(G.bossDefeated&&G.bossDefeated['travis'])?750:0;
+  return(G.wins||0)*100+G.championships.length*500+Math.floor((G.money||0)/100)+(G.level||1)*50+((G.pStats&&G.pStats.int)||5)*10+lifestyleBonus+travisBonus;
+}
+function submitScore(){
+  var score=calcScore();
+  var body=JSON.stringify({fields:{
+    name:{stringValue:G.playerName||'ANONYMOUS'},
+    score:{integerValue:''+score},
+    wins:{integerValue:''+(G.wins||0)},
+    losses:{integerValue:''+(G.losses||0)},
+    titles:{integerValue:''+G.championships.length},
+    level:{integerValue:''+(G.level||1)},
+    int:{integerValue:''+((G.pStats&&G.pStats.int)||5)},
+    money:{integerValue:''+(G.money||0)},
+    date:{stringValue:new Date().toLocaleDateString()}
+  }});
+  var btn=document.getElementById('submitBtn');
+  var msg=document.getElementById('submitMsg');
+  if(btn)btn.disabled=true;
+  if(msg){msg.textContent='Submitting...';msg.style.display='block';msg.style.color='var(--gold)';}
+  fetch(FB_BASE,{method:'POST',headers:{'Content-Type':'application/json'},body:body})
+    .then(function(r){return r.ok?r.json():Promise.reject(r.status);})
+    .then(function(){
+      if(msg){msg.textContent='\u2713 SCORE SUBMITTED TO HALL OF FAME!';msg.style.color='var(--grn)';}
+      toast('Submitted!','g');
+    })
+    .catch(function(){
+      var lb=JSON.parse(localStorage.getItem('ws_lb')||'[]');
+      lb.push({name:G.playerName||'ANONYMOUS',score:score,wins:G.wins||0,losses:G.losses||0,titles:G.championships.length,level:G.level||1,int:(G.pStats&&G.pStats.int)||5,money:G.money||0,date:new Date().toLocaleDateString()});
+      lb.sort(function(a,b){return b.score-a.score;});if(lb.length>50)lb.length=50;
+      localStorage.setItem('ws_lb',JSON.stringify(lb));
+      if(msg){msg.textContent='\u2713 Saved locally';msg.style.color='var(--muted)';}
+      toast('Saved locally','n');
+    });
+}
+function showLeaderboard(){
+  G.lbPrev=G.screen||'gameEnd';
+  showScreen('leaderboardScreen');
+  var table=document.getElementById('lbTable');
+  var backBtn=document.getElementById('lbBackBtn');
+  if(backBtn)backBtn.textContent='\u25c4 BACK';
+  table.innerHTML='<div style="font-size:8px;color:var(--gold);text-align:center;padding:16px">Loading Hall of Fame\u2026</div>';
+  fetch(FB_BASE+'?pageSize=50')
+    .then(function(r){return r.ok?r.json():Promise.reject(r.status);})
+    .then(function(data){
+      var docs=(data.documents||[]).map(fbToEntry);
+      docs.sort(function(a,b){return b.score-a.score;});
+      renderLBTable(docs,table);
+    })
+    .catch(function(){
+      var lb=JSON.parse(localStorage.getItem('ws_lb')||'[]');
+      renderLBTable(lb,table);
+    });
+}
+function renderLBTable(docs,table){
+  if(!docs||!docs.length){table.innerHTML='<div style="font-size:7px;color:var(--muted);text-align:center;padding:20px">NO SCORES YET \u2014 BE THE FIRST!</div>';return;}
+  var html='<div style="display:grid;grid-template-columns:28px 1fr 60px 50px 36px 36px;gap:4px;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid var(--bdr)">';
+  ['#','PLAYER','SCORE','W/L','LVL','INT'].forEach(function(h){html+='<div style="font-size:5px;color:var(--gold);letter-spacing:1px">'+h+'</div>';});
+  html+='</div>';
+  docs.slice(0,25).forEach(function(e,i){
+    var crown=i===0?'\ud83d\udc51':i===1?'\ud83e\udd48':i===2?'\ud83e\udd49':'';
+    var col=e.name===G.playerName?'var(--gold)':'var(--txt)';
+    html+='<div style="display:grid;grid-template-columns:28px 1fr 60px 50px 36px 36px;gap:4px;margin-bottom:3px;padding:2px 0;border-bottom:1px solid #111">';
+    html+='<div style="font-size:5px;color:var(--muted)">'+(crown||i+1)+'</div>';
+    html+='<div style="font-size:5px;color:'+col+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+e.name+'</div>';
+    html+='<div style="font-size:5px;color:var(--gold)">'+e.score.toLocaleString()+'</div>';
+    html+='<div style="font-size:5px;color:var(--grn)">'+e.wins+'W/'+e.losses+'L</div>';
+    html+='<div style="font-size:5px;color:var(--txt)">'+e.level+'</div>';
+    html+='<div style="font-size:5px;color:var(--int)">'+e.int+'</div>';
+    html+='</div>';
+  });
+  table.innerHTML=html;
+}
+function lbBack(){if(G.lbPrev==='career')renderCareer();else showScreen('gameEnd');}
+function clearLeaderboard(){toast('Use Firebase console to manage scores.','n');}
+
+// ================================================================
+// GAME END
+// ================================================================
+function showGameEnd(){
+  var won=G.championships.includes('world');
+  document.getElementById('endTitle').textContent=won?'\ud83c\udfc6 WRESTLING LEGEND! \ud83c\udfc6':'CAREER COMPLETE';
+  document.getElementById('endTitle').style.color=won?'var(--gold)':'var(--muted)';
+  var belts=TITLES.filter(function(t){return G.championships.includes(t.id);}).map(function(t){return t.icon+' '+t.name;}).join('<br>')||'None';
+  document.getElementById('endSum').innerHTML=
+    '<h3>CAREER SUMMARY: '+G.player.name+'</h3>'+
+    '<div style="text-align:center;margin:7px 0"><img src="'+SPRITES[G.player.id]+'" style="height:76px;image-rendering:pixelated"/></div>'+
+    '<div class="end-row">RECORD<span>'+G.wins+'W \u2014 '+G.losses+'L</span></div>'+
+    '<div class="end-row">LEVEL<span>'+G.level+'</span></div>'+
+    '<div class="end-row">INT<span>'+(G.pStats.int||5)+'/20</span></div>'+
+    '<div class="end-row">WEEKS<span>'+G.week+'</span></div>'+
+    '<div class="end-row">BANK<span>$'+G.money.toLocaleString()+'</span></div>'+
+    '<div class="end-row">TITLES<span>'+G.championships.length+'</span></div>'+
+    '<div style="font-size:5px;color:var(--gold);margin-top:7px">TITLES WON:</div>'+
+    '<div style="font-size:5px;color:var(--muted);margin-top:3px;line-height:2">'+belts+'</div>';
+  document.getElementById('careerScoreLine').textContent='CAREER SCORE: '+calcScore().toLocaleString()+' pts';
+  document.getElementById('submitMsg').style.display='none';
+  document.getElementById('submitBtn').disabled=false;
+  showScreen('gameEnd');
+}
+function restartGame(){initGame();showScreen('title');}
+
+// ================================================================
+// INIT
+// ================================================================
+document.getElementById('title').addEventListener('click',function(){
+  startMusic();if(G.screen==='title'){showScreen('charSelect');buildCharSelect();}
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Enter'){startMusic();if(G.screen==='title'){showScreen('charSelect');buildCharSelect();}}
+});
+(function(){
+  var tc=document.getElementById('titleCast');
+  WRESTLERS.forEach(function(w){var i=document.createElement('img');i.src=SPRITES[w.id];tc.appendChild(i);});
+})();
+

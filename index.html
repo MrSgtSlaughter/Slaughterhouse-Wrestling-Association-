@@ -4,6 +4,7 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Wrestling Story</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<script>function toggleHTP(){var p=document.getElementById('howToPlayPanel');if(p)p.style.display=(p.style.display==='flex')?'none':'flex';}function openLoadMenu(){if(typeof G!=='undefined'&&typeof showCareerFlow==='function'){var saves=[];try{saves=JSON.parse(localStorage.getItem('ws_saves')||'[null,null,null]');}catch(e){}if(!saves.some(function(s){return s;})){alert('No saves found!');return;}document.getElementById('saveModal').classList.add('open');}}</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--gold:#ffd700;--gold2:#b8860b;--red:#ff3333;--grn:#00ff88;--bg:#07070f;--panel:#0e0e1a;--bdr:#252535;--txt:#e0e0e0;--muted:#5a5a7a;--int:#aa44ff}
@@ -189,7 +190,7 @@ body{background:var(--bg);color:var(--txt);font-family:'Press Start 2P',monospac
 <div style="position:fixed;bottom:4px;left:0;width:100%;text-align:center;font-family:'Press Start 2P',monospace;font-size:4px;color:rgba(100,100,120,.5);z-index:9999;letter-spacing:1px;pointer-events:none">&#169; 2026 Jason Slaughter | PixelED Path, LLC</div>
 <audio id="bgm" src="music.mp3" loop></audio>
 <!-- TITLE -->
-<div id="title" class="screen active">
+<div id="title" class="screen active" onclick="try{startMusic();}catch(e){}try{if(G.screen==='title'){showScreen('charSelect');buildCharSelect();}}catch(e){alert(e.message)}">
   <div style="position:absolute;top:12px;right:14px;display:flex;gap:6px;z-index:10">
     <button class="btn" style="font-size:6px;padding:6px 10px" onclick="toggleHTP()">&#128214; HOW TO PLAY</button>
     <button class="btn btn-grn" style="font-size:6px;padding:6px 10px" onclick="openLoadMenu()">&#128190; LOAD SAVE</button>
@@ -199,7 +200,7 @@ body{background:var(--bg);color:var(--txt);font-family:'Press Start 2P',monospac
     <div style="color:var(--gold);font-size:clamp(8px,1.6vw,13px);letter-spacing:6px;margin-top:-6px;text-shadow:0 0 10px var(--gold)">THE SEQUEL</div>
     <div style="color:var(--red);font-size:clamp(7px,1.4vw,10px);margin-top:8px">A CAREER MODE EXPERIENCE &#8212; ANCIENT HISTORY EDITION</div>
     <div style="color:var(--muted);font-size:6px;margin:10px 0 14px;line-height:2.4">25 WEEKS &middot; BUILD YOUR LEGEND &middot; SUBMIT TO THE HALL OF FAME</div>
-    <div class="blink" style="color:var(--gold);font-size:clamp(8px,1.7vw,12px)">CLICK OR PRESS ENTER TO START</div>
+    <div class="blink" style="color:var(--gold);font-size:clamp(8px,1.7vw,12px);cursor:pointer" onclick="try{startMusic();}catch(e){}try{if(G.screen==='title'){showScreen('charSelect');buildCharSelect();}}catch(e){alert(e.message)}">CLICK OR PRESS ENTER TO START</div>
   </div>
   <div id="howToPlayPanel" style="display:none;position:absolute;inset:0;z-index:20;background:rgba(0,0,0,.93);overflow-y:auto;padding:20px 28px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -411,7 +412,11 @@ const WRESTLERS=[
   {id:'ragingrhino',name:'Raging Rhino',style:'Luchador Tank',gender:'m',finisher:'Rhino Charge',bio:'A masked powerhouse combining lucha libre with brute force.',trash:['The mask never falls.','A rhino does not stop.','You cannot contain this fury.'],stats:{str:19,spd:9,tec:11,sta:20,cha:13,int:5},colors:{p:'#263238',s:'#bf360c'}},
   {id:'razorclaw',name:'Razorclaw',style:'Street Fighter',gender:'f',finisher:'Claw Strike',bio:'Tough, gritty, and never backs down from anyone.',trash:['You picked the wrong fight.',"I've fought in worse places than this.",'Come on then.'],stats:{str:15,spd:14,tec:17,sta:14,cha:14,int:5},colors:{p:'#4e342e',s:'#e65100'}},
   {id:'ringblade',name:'Ring Blade',style:'High Flyer',gender:'f',finisher:'Blade Dive',bio:'Acrobatic precision wrapped in cold determination.',trash:["You'll never see the top rope coming.",'Gravity is my weapon.','Too slow, always too slow.'],stats:{str:13,spd:17,tec:19,sta:12,cha:16,int:5},colors:{p:'#212121',s:'#9e9e9e'}},
-  {id:'violetvixen',name:'Violet Vixen',style:'Speed Demon',gender:'f',finisher:'Vixen Vortex',bio:'Untouchable reflexes and a relentless offensive style.',trash:['Catch me if you can.','Speed wins every time.',"I'm done playing games - let's go!"],stats:{str:11,spd:20,tec:14,sta:11,cha:18,int:5},colors:{p:'#6a1b9a',s:'#4a148c'}}
+  {id:'violetvixen',name:'Violet Vixen',style:'Speed Demon',gender:'f',finisher:'Vixen Vortex',bio:'Untouchable reflexes and a relentless offensive style.',trash:['Catch me if you can.','Speed wins every time.',"I'm done playing games - let's go!"],stats:{str:11,spd:20,tec:14,sta:11,cha:18,int:5},colors:{p:'#6a1b9a',s:'#4a148c'}},
+  {id:'Patrick_Star',name:'Patrick \u201cThe Drooler\u201d Star',style:'Unpredictable Starfish',gender:'m',finisher:'The Rock Bottom',bio:'He lives under a rock. Literally. Mid stats but absolutely unpredictable.',trash:['Is mayonnaise an instrument?','I woke up and chose violence.','I may not be smart but I can hurt you.'],stats:{str:14,spd:9,tec:8,sta:15,cha:13,int:5},colors:{p:'#cc2244',s:'#ff88aa'},isBoss:true,bossKey:'patrick'},
+  {id:'choo_choo_chuey',name:'\u201cChoo Choo\u201d Chuey',style:'Deceptive Wanderer',gender:'m',finisher:'The Locomotive',bio:'Nobody knows where he came from. Surprisingly easy to beat.',trash:['Have you seen my hat?','I am pretty sure I took a wrong turn somewhere.','Wait, this is a wrestling match?'],stats:{str:8,spd:10,tec:7,sta:9,cha:12,int:5},colors:{p:'#cc0000',s:'#3333cc'},isBoss:true,bossKey:'chuey'},
+  {id:'travis_scott',name:'Travis \u201cThe Microphone\u201d Scott',style:'Rap God Destroyer',gender:'m',finisher:'Stage Dive',bio:'He dropped a platinum album AND a title reign. The toughest fight of your career.',trash:['Sicko mode activated.','You cannot handle this level.','Nobody leaves this ring standing.'],stats:{str:20,spd:20,tec:20,sta:20,cha:20,int:5},colors:{p:'#1a0030',s:'#ff6600'},isBoss:true,bossKey:'travis'},
+  {id:'mrslaughterhouse',name:'Mr. Slaughterhouse',style:'World Champion',gender:'m',finisher:'The Slaughter',bio:'The reigning World Champion. A masked monster with no weakness and no mercy.',trash:['You should not have come here.','I have broken everyone who stood before you.','This is not a match. This is an execution.'],stats:{str:20,spd:15,tec:18,sta:20,cha:16,int:5},colors:{p:'#1a1a1a',s:'#8b0000'},isBoss:true,bossKey:'slaughterhouse'}
 ];
 const QUESTIONS=[
   {q:'The Paleolithic Age is also called the:',c:['Bronze Age','Old Stone Age','New Stone Age','Iron Age'],a:1,ex:'PALEOLITHIC means Old Stone Age. Humans used chipped stone tools during this period.'},
@@ -856,7 +861,7 @@ function toggleHTP(){
 let selW=null;
 function buildCharSelect(){
   const g=document.getElementById('charGrid');g.innerHTML='';
-  WRESTLERS.forEach(w=>{
+  WRESTLERS.filter(function(w){return !w.isBoss;}).forEach(w=>{
     const c=document.createElement('div');c.className='char-card';
     c.innerHTML='<div class="you-badge">YOU</div><img src="'+SPRITES[w.id]+'"/><div class="char-name">'+w.name+'</div><div class="char-style">'+w.style+'</div>';
     c.onclick=()=>{
@@ -1732,3 +1737,6 @@ document.addEventListener('keydown',function(e){
   WRESTLERS.forEach(function(w){var i=document.createElement('img');i.src=SPRITES[w.id];tc.appendChild(i);});
 })();
 
+</script>
+</body>
+</html>

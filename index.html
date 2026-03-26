@@ -891,7 +891,7 @@ function startCareer(){
 // ================================================================
 function showCareerFlow(){
   startMusic();
-  if(G.week>G.seasonLength){showGameEnd();return;}
+  if(G.week>G.seasonLength||G.week>30){showGameEnd();return;}
   if(G.weekEventsDone){renderCareer();return;}
   G.weekEventsDone=true;
   showChanceCard(drawCard());
@@ -1089,7 +1089,16 @@ function showTrainPicker(){
     };
     g.appendChild(d);
   });
-  document.getElementById('trainSub').textContent='WEEK '+G.week+' \u2014 SKIP MATCH TO TRAIN (+1 STAT)';
+  var allMaxed=Object.keys(names).every(function(stat){return (G.pStats[stat]||0)>=20;});
+  if(allMaxed){
+    document.getElementById('trainSub').textContent='ALL STATS MAXED! GO FIGHT A BOSS!';
+    var msg=document.createElement('div');
+    msg.style.cssText='font-size:8px;color:var(--gold);text-align:center;padding:14px;text-shadow:0 0 12px var(--gold)';
+    msg.textContent='\ud83d\udd25 EVERY STAT IS AT 20. YOU ARE UNSTOPPABLE.';
+    g.appendChild(msg);
+  } else {
+    document.getElementById('trainSub').textContent='WEEK '+G.week+' \u2014 SKIP MATCH TO TRAIN (+1 STAT)';
+  }
   showScreen('trainingScreen');
 }
 function cancelTraining(){renderCareer();}
@@ -1527,220 +1536,30 @@ function showPostMatch(won,xpGain,purse,didLvl){
   const pb=document.getElementById('postBtns');pb.style.visibility='hidden';
   pb.innerHTML='<button class="btn" onclick="returnToCareer()">CONTINUE \u25b6</button>';
   const lu=document.getElementById('lvlUpTxt');const ss=document.getElementById('statUpSec');
-  if(didLvl){lu.style.display='block';ss.style.display='block';buildStatUp(()=>pb.style.visibility='visible');}
+  if(didLvl){lu.style.display='block';ss.style.display='block';buildStatUp(function(){pb.style.visibility='visible';});}
   else{lu.style.display='none';ss.style.display='none';pb.style.visibility='visible';}
+  setTimeout(function(){if(pb)pb.style.visibility='visible';},1500);
   showScreen('postMatch');
 }
 function buildStatUp(onDone){
-  const ch=document.getElementById('suChoices');ch.innerHTML='';
-  const ic={str:'\ud83d\udcaa',spd:'\u26a1',tec:'\ud83e\udde0',sta:'\u2764\ufe0f',cha:'\ud83c\udf1f',int:'\ud83d\udd2e'};
-  const lb={str:'STR',spd:'SPD',tec:'TEC',sta:'STA',cha:'CHA',int:'INT'};
-  Object.keys(lb).filter(stat=>G.pStats[stat]<20).sort(()=>Math.random()-.5).slice(0,3).forEach(stat=>{
-    const b=document.createElement('div');b.className='su-btn';
+  var ch=document.getElementById('suChoices');ch.innerHTML='';
+  var ic={str:'\ud83d\udcaa',spd:'\u26a1',tec:'\ud83e\udde0',sta:'\u2764\ufe0f',cha:'\ud83c\udf1f',int:'\ud83d\udd2e'};
+  var lb={str:'STR',spd:'SPD',tec:'TEC',sta:'STA',cha:'CHA',int:'INT'};
+  var available=Object.keys(lb).filter(function(stat){return G.pStats[stat]<20;});
+  if(!available.length){
+    ch.innerHTML='<div style="font-size:7px;color:var(--gold);text-align:center;padding:8px">ALL STATS MAXED! \ud83d\udd25</div>';
+    onDone();
+    return;
+  }
+  available.sort(function(){return Math.random()-.5;}).slice(0,3).forEach(function(stat){
+    var b=document.createElement('div');b.className='su-btn';
     b.innerHTML='<div class="su-s">'+ic[stat]+' +1 '+lb[stat]+'</div><div class="su-v">'+G.pStats[stat]+' \u2192 '+(G.pStats[stat]+1)+'</div>';
-    b.onclick=()=>{G.pStats[stat]=Math.min(20,G.pStats[stat]+1);ch.querySelectorAll('.su-btn').forEach(x=>{x.style.pointerEvents='none';x.style.opacity='.4';});b.style.borderColor='var(--grn)';b.style.opacity='1';onDone();};
+    b.onclick=(function(s){return function(){
+      G.pStats[s]=Math.min(20,G.pStats[s]+1);
+      ch.querySelectorAll('.su-btn').forEach(function(x){x.style.pointerEvents='none';x.style.opacity='.4';});
+      b.style.borderColor='var(--grn)';b.style.opacity='1';
+      onDone();
+    };})(stat);
     ch.appendChild(b);
   });
 }
-function returnToCareer(){showCareerFlow();}
-function showChamp(titleId,xpGain,purse){
-  G.injuryPenalty=false;
-  const t=TITLES.find(x=>x.id===titleId);
-  document.getElementById('champBelt').textContent=t.icon;
-  document.getElementById('champTxt').textContent='NEW '+t.name.toUpperCase()+' CHAMPION!';
-  document.getElementById('champSub').innerHTML=G.player.name+' captures the '+t.name+'!<br>+'+xpGain+' XP \u00b7 +$'+purse.toLocaleString();
-  showScreen('championship');
-}
-
-// ================================================================
-// SAVE / LOAD
-// ================================================================
-const SAVE_KEY='ws_saves';
-function getSaves(){try{return JSON.parse(localStorage.getItem(SAVE_KEY)||'[null,null,null]');}catch{return[null,null,null];}}
-function putSaves(arr){localStorage.setItem(SAVE_KEY,JSON.stringify(arr));}
-function saveGame(){
-  const saves=getSaves();
-  document.getElementById('saveModalTitle').textContent='SAVE GAME';
-  const sl=document.getElementById('saveSlots');sl.innerHTML='';
-  saves.forEach((s,i)=>{
-    const row=document.createElement('div');row.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid var(--bdr)';
-    row.innerHTML='<div style="font-size:6px;color:var(--muted)">SLOT '+(i+1)+': '+(s?'<span style="color:var(--txt)">'+s.playerName+' W'+s.week+' '+s.wins+'W/$'+(s.money||0).toLocaleString()+'</span>':'<span style="color:#333">EMPTY</span>')+'</div>';
-    const btn=document.createElement('button');btn.className='btn';btn.style.cssText='font-size:6px;padding:5px 9px';btn.textContent='SAVE HERE';
-    btn.onclick=(function(idx){return function(){saves[idx]={...JSON.parse(JSON.stringify(G)),savedAt:new Date().toLocaleString()};putSaves(saves);toast('Saved to slot '+(idx+1)+'!','g');closeSaveModal();};})(i);
-    row.appendChild(btn);sl.appendChild(row);
-  });
-  document.getElementById('saveModal').classList.add('open');
-}
-function openLoadMenu(){
-  const saves=getSaves();
-  if(!saves.some(s=>s)){toast('No saves found!','b');return;}
-  document.getElementById('saveModalTitle').textContent='LOAD GAME';
-  const sl=document.getElementById('saveSlots');sl.innerHTML='';
-  saves.forEach((s,i)=>{
-    const row=document.createElement('div');row.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid var(--bdr)';
-    if(s){
-      row.innerHTML='<div style="font-size:6px;color:var(--muted)">SLOT '+(i+1)+': <span style="color:var(--txt)">'+s.playerName+' \u2014 Week '+s.week+' \u2014 $'+(s.money||0).toLocaleString()+'</span><br><span style="font-size:5px">'+(s.savedAt||'')+'</span></div>';
-      const btn=document.createElement('button');btn.className='btn btn-grn';btn.style.cssText='font-size:6px;padding:5px 9px';btn.textContent='LOAD';
-      btn.onclick=(function(save){return function(){Object.assign(G,JSON.parse(JSON.stringify(save)));closeSaveModal();toast('Game loaded!','g');setTimeout(()=>showCareerFlow(),300);};})(s);
-      row.appendChild(btn);
-    }else{row.innerHTML='<div style="font-size:6px;color:#333">SLOT '+(i+1)+': EMPTY</div>';}
-    sl.appendChild(row);
-  });
-  document.getElementById('saveModal').classList.add('open');
-}
-function closeSaveModal(){document.getElementById('saveModal').classList.remove('open');}
-
-// ================================================================
-// LEADERBOARD
-// ================================================================
-
-
-
-
-
-
-
-
-// ================================================================
-// SCORE CALCULATION (includes lifestyle items)
-// ================================================================
-function calcScore(){
-  var lifestyleBonus=0;
-  var bonusMap={house:300,car:200,shoes:100,chain:150,watch:125,ring:175};
-  (G.upgrades||[]).forEach(function(u){if(bonusMap[u])lifestyleBonus+=bonusMap[u];});
-  var travisBonus=(G.bossDefeated&&G.bossDefeated['travis'])?750:0;
-  return(G.wins||0)*100+G.championships.length*500+Math.floor((G.money||0)/100)+(G.level||1)*50+((G.pStats&&G.pStats.int)||5)*10+lifestyleBonus+travisBonus;
-}
-
-// ================================================================
-// FIREBASE LEADERBOARD (minigolf-fd9ea Firestore)
-// ================================================================
-var FB_BASE='https://firestore.googleapis.com/v1/projects/minigolf-fd9ea/databases/(default)/documents/wrestling_story_scores';
-
-function fbVal(f){return f?Object.values(f)[0]:'';}
-function fbToEntry(doc){
-  var f=doc.fields||{};
-  return{name:fbVal(f.name)||'?',score:Number(fbVal(f.score))||0,wins:Number(fbVal(f.wins))||0,losses:Number(fbVal(f.losses))||0,titles:Number(fbVal(f.titles))||0,level:Number(fbVal(f.level))||1,int:Number(fbVal(f.int))||5,money:Number(fbVal(f.money))||0};
-}
-
-function submitScore(){
-  var score=calcScore();
-  var body=JSON.stringify({fields:{
-    name:{stringValue:G.playerName||'ANONYMOUS'},
-    score:{integerValue:''+score},
-    wins:{integerValue:''+(G.wins||0)},
-    losses:{integerValue:''+(G.losses||0)},
-    titles:{integerValue:''+G.championships.length},
-    level:{integerValue:''+(G.level||1)},
-    int:{integerValue:''+((G.pStats&&G.pStats.int)||5)},
-    money:{integerValue:''+(G.money||0)},
-    date:{stringValue:new Date().toLocaleDateString()}
-  }});
-  var btn=document.getElementById('submitBtn');
-  var msg=document.getElementById('submitMsg');
-  if(btn)btn.disabled=true;
-  if(msg){msg.textContent='Submitting...';msg.style.display='block';msg.style.color='var(--gold)';}
-  fetch(FB_BASE,{method:'POST',headers:{'Content-Type':'application/json'},body:body})
-    .then(function(r){return r.ok?r.json():Promise.reject(r.status);})
-    .then(function(){
-      if(msg){msg.textContent='\u2713 SCORE SUBMITTED TO HALL OF FAME!';msg.style.color='var(--grn)';}
-      toast('Submitted!','g');
-    })
-    .catch(function(){
-      var lb=JSON.parse(localStorage.getItem('ws_lb')||'[]');
-      lb.push({name:G.playerName||'ANONYMOUS',score:score,wins:G.wins||0,losses:G.losses||0,titles:G.championships.length,level:G.level||1,int:(G.pStats&&G.pStats.int)||5,money:G.money||0,date:new Date().toLocaleDateString()});
-      lb.sort(function(a,b){return b.score-a.score;});if(lb.length>50)lb.length=50;
-      localStorage.setItem('ws_lb',JSON.stringify(lb));
-      if(msg){msg.textContent='\u2713 Saved locally (check connection)';msg.style.color='var(--muted)';}
-      toast('Saved locally','n');
-    });
-}
-
-function showLeaderboard(){
-  G.lbPrev=G.screen||'gameEnd';
-  showScreen('leaderboardScreen');
-  var table=document.getElementById('lbTable');
-  var backBtn=document.getElementById('lbBackBtn');
-  if(backBtn)backBtn.textContent='\u25c4 BACK';
-  table.innerHTML='<div style="font-size:8px;color:var(--gold);text-align:center;padding:16px">Loading Hall of Fame\u2026</div>';
-  fetch(FB_BASE+'?pageSize=50')
-    .then(function(r){return r.ok?r.json():Promise.reject(r.status);})
-    .then(function(data){
-      var docs=(data.documents||[]).map(fbToEntry);
-      docs.sort(function(a,b){return b.score-a.score;});
-      renderLBTable(docs,table);
-    })
-    .catch(function(){
-      var lb=JSON.parse(localStorage.getItem('ws_lb')||'[]');
-      renderLBTable(lb,table);
-    });
-}
-
-function renderLBTable(docs,table){
-  if(!docs||!docs.length){table.innerHTML='<div style="font-size:7px;color:var(--muted);text-align:center;padding:20px">NO SCORES YET \u2014 BE THE FIRST!<br><br><span style=\"color:var(--red)\">If loading failed, check Firebase Rules.</span></div>';return;}
-  var html='<div style="display:grid;grid-template-columns:28px 1fr 60px 50px 36px 36px;gap:4px;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid var(--bdr)">';
-  ['#','PLAYER','SCORE','W/L','LVL','INT'].forEach(function(h){html+='<div style="font-size:5px;color:var(--gold);letter-spacing:1px">'+h+'</div>';});
-  html+='</div>';
-  docs.slice(0,25).forEach(function(e,i){
-    var crown=i===0?'\ud83d\udc51':i===1?'\ud83e\udd48':i===2?'\ud83e\udd49':'';
-    var col=e.name===G.playerName?'var(--gold)':'var(--txt)';
-    html+='<div style="display:grid;grid-template-columns:28px 1fr 60px 50px 36px 36px;gap:4px;margin-bottom:3px;padding:2px 0;border-bottom:1px solid #111">';
-    html+='<div style="font-size:5px;color:var(--muted)">'+(crown||i+1)+'</div>';
-    html+='<div style="font-size:5px;color:'+col+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+e.name+'</div>';
-    html+='<div style="font-size:5px;color:var(--gold)">'+e.score.toLocaleString()+'</div>';
-    html+='<div style="font-size:5px;color:var(--grn)">'+e.wins+'W/'+e.losses+'L</div>';
-    html+='<div style="font-size:5px;color:var(--txt)">'+e.level+'</div>';
-    html+='<div style="font-size:5px;color:var(--int)">'+e.int+'</div>';
-    html+='</div>';
-  });
-  table.innerHTML=html;
-}
-
-function lbBack(){if(G.lbPrev==='career')renderCareer();else showScreen('gameEnd');}
-function clearLeaderboard(){toast('Use Firebase console to manage scores.','n');}
-
-function showGameEnd(){
-  const won=G.championships.includes('world');
-  document.getElementById('endTitle').textContent=won?'\ud83c\udfc6 WRESTLING LEGEND! \ud83c\udfc6':'CAREER COMPLETE';
-  document.getElementById('endTitle').style.color=won?'var(--gold)':'var(--muted)';
-  const belts=TITLES.filter(t=>G.championships.includes(t.id)).map(t=>t.icon+' '+t.name).join('<br>')||'None';
-  document.getElementById('endSum').innerHTML=
-    '<h3>CAREER SUMMARY: '+G.player.name+'</h3>'+
-    '<div style="text-align:center;margin:7px 0"><img src="'+SPRITES[G.player.id]+'" style="height:76px;image-rendering:pixelated"/></div>'+
-    '<div class="end-row">RECORD<span>'+G.wins+'W \u2014 '+G.losses+'L</span></div>'+
-    '<div class="end-row">LEVEL<span>'+G.level+'</span></div>'+
-    '<div class="end-row">INT<span>'+(G.pStats.int||5)+'/20</span></div>'+
-    '<div class="end-row">WEEKS<span>'+G.week+'</span></div>'+
-    '<div class="end-row">BANK<span>$'+G.money.toLocaleString()+'</span></div>'+
-    '<div class="end-row">TITLES<span>'+G.championships.length+'</span></div>'+
-    '<div style="font-size:5px;color:var(--gold);margin-top:7px">TITLES WON:</div>'+
-    '<div style="font-size:5px;color:var(--muted);margin-top:3px;line-height:2">'+belts+'</div>';
-  document.getElementById('careerScoreLine').textContent='CAREER SCORE: '+calcScore().toLocaleString()+' pts';
-  document.getElementById('submitMsg').style.display='none';
-  document.getElementById('submitBtn').disabled=false;
-  showScreen('gameEnd');
-}
-function restartGame(){initGame();showScreen('title');}
-
-// ================================================================
-// INIT — script is at end of body so DOM is ready
-// ================================================================
-document.getElementById('title').addEventListener('click',function(){
-  startMusic();if(G.screen==='title'){showScreen('charSelect');buildCharSelect();}
-});
-document.addEventListener('keydown',function(e){
-  if(e.key==='Enter'){startMusic();if(G.screen==='title'){showScreen('charSelect');buildCharSelect();}}
-});
-(function(){
-  const tc=document.getElementById('titleCast');
-  WRESTLERS.forEach(function(w){const i=document.createElement('img');i.src=SPRITES[w.id];tc.appendChild(i);});
-})();
-
-</script>
-</body>
-</html>,
-  {id:'choo_choo_chuey',name:'"Choo Choo" Chuey',style:'Deceptive Wanderer',gender:'m',finisher:'The Locomotive',bio:'Nobody knows where he came from. He is surprisingly easy to beat.',trash:['Have you seen my hat?','I am pretty sure I took a wrong turn somewhere.','Wait, this is a wrestling match?'],stats:{str:8,spd:10,tec:7,sta:9,cha:12,int:5},colors:{p:'#cc0000',s:'#3333cc'},isBoss:true,bossKey:'chuey'},
-  {id:'Patrick_Star',name:'Patrick "The Drooler" Star',style:'Unpredictable Starfish',gender:'m',finisher:'The Rock Bottom',bio:'He lives under a rock. Literally. Somehow qualified for this promotion. Mid stats but absolutely unpredictable.',trash:['Is mayonnaise an instrument?','I woke up and chose violence.','I may not be smart but I can hurt you.'],stats:{str:14,spd:9,tec:8,sta:15,cha:13,int:5},colors:{p:'#cc2244',s:'#ff88aa'},isBoss:true,bossKey:'patrick'},
-  {id:'travis_scott',name:'Travis "The Microphone" Scott',style:'Rap God Destroyer',gender:'m',finisher:'Stage Dive',bio:'He dropped a platinum album AND a title reign. Maxed out in every way. This is the toughest fight of your career.',trash:['Sicko mode activated.','You cannot handle this level.','Nobody leaves this ring standing.'],stats:{str:20,spd:20,tec:20,sta:20,cha:20,int:5},colors:{p:'#1a0030',s:'#ff6600'},isBoss:true,bossKey:'travis'},
-  {id:'mrslaughterhouse',name:'Mr. Slaughterhouse',style:'World Champion',gender:'m',finisher:'The Slaughter',bio:'The reigning World Champion. A masked monster with no weakness and no mercy.',trash:['You should not have come here.','I have broken everyone who stood before you.','This is not a match. This is an execution.'],stats:{str:20,spd:15,tec:18,sta:20,cha:16,int:5},colors:{p:'#1a1a1a',s:'#8b0000'},isBoss:true,bossKey:'slaughterhouse'},
-  {id:'choo_choo_chuey',name:'"Choo Choo" Chuey',style:'Unranked Enthusiast',gender:'m',finisher:'The Caboose',bio:'Nobody knows how he got here. He just showed up. Unlock by buying a Luxury Car.',trash:['I found you!','I have been looking everywhere for this belt.','You cannot hide from Choo Choo!'],stats:{str:8,spd:10,tec:6,sta:9,cha:18,int:5},colors:{p:'#cc0000',s:'#3355cc'},isBoss:true,bossKey:'car',rewardMoney:4000}

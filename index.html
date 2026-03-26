@@ -1700,6 +1700,17 @@ function clearLeaderboard(){toast('Use Firebase console to manage scores.','n');
 // ================================================================
 // GAME END
 // ================================================================
+function returnToCareer(){showCareerFlow();}
+function showChamp(titleId,xpGain,purse){G.injuryPenalty=false;var t=TITLES.find(function(x){return x.id===titleId;});document.getElementById("champBelt").textContent=t.icon;document.getElementById("champTxt").textContent="NEW "+t.name.toUpperCase()+" CHAMPION!";document.getElementById("champSub").innerHTML=G.player.name+" captures the "+t.name+"!<br>+"+xpGain+" XP · +$"+purse.toLocaleString();showScreen("championship");}
+function returnToCareer(){showCareerFlow();}
+function showChamp(titleId,xpGain,purse){
+  G.injuryPenalty=false;
+  var t=TITLES.find(function(x){return x.id===titleId;});
+  document.getElementById('champBelt').textContent=t.icon;
+  document.getElementById('champTxt').textContent='NEW '+t.name.toUpperCase()+' CHAMPION!';
+  document.getElementById('champSub').innerHTML=G.player.name+' captures the '+t.name+'!<br>+'+xpGain+' XP \u00b7 +$'+purse.toLocaleString();
+  showScreen('championship');
+}
 function showGameEnd(){
   var won=G.championships.includes('world');
   document.getElementById('endTitle').textContent=won?'\ud83c\udfc6 WRESTLING LEGEND! \ud83c\udfc6':'CAREER COMPLETE';

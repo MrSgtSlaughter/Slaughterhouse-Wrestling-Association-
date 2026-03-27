@@ -749,9 +749,9 @@ const MOVES=[
   {id:'power',label:'PWR SLAM',desc:'Big hit, risky',stat:'str',dmgStat:'str',dmgMult:.60,risk:.20},
   {id:'tech',label:'GRAPPLE',desc:'Tech hold',stat:'tec',dmgStat:'tec',dmgMult:.40,risk:0},
   {id:'recov',label:'RECOVER',desc:'Restore HP',stat:'sta',dmgStat:'sta',dmgMult:0,risk:0,isHeal:true},
-  {id:'high',label:'HIGH RISK',desc:'All or nothing',stat:'spd',dmgStat:'spd',dmgMult:.80,risk:.35},
+  {id:'high',label:'HIGH RISK',desc:'All or nothing',stat:'spd',dmgStat:'spd',dmgMult:.65,risk:.35},
   {id:'smart',label:'SMART CTR',desc:'INT move (10+)',stat:'int',dmgStat:'tec',dmgMult:.55,risk:0,needsInt:10,isSmartCounter:true},
-  {id:'sig',label:'FINISHER \u26a1',desc:'Signature (1/match)',stat:'cha',dmgStat:'str',dmgMult:1.0,risk:0,isSig:true}
+  {id:'sig',label:'FINISHER \u26a1',desc:'Signature (1/match)',stat:'cha',dmgStat:'str',dmgMult:0.65,risk:0,isSig:true}
 ];
 const SHOP_ITEMS=[
   {id:'str_b',ico:'\ud83d\udcaa',nm:'IRON SUPPLEMENT',desc:'Serious gains. Results take time.',price:1500,stat:'str',amt:1},
@@ -1278,6 +1278,8 @@ function goToPreMatch(){
     if(started)return;started=true;
     document.getElementById('entName').textContent=opp.name;
     document.getElementById('entWrap').style.display='block';
+    var bk=opp.bossKey||'';
+    vid.style.objectFit=(bk==='freddy'||bk==='slaughterhouse')?'contain':'cover';
     vid.play().catch(()=>showVsScreen());
   }
   vid.oncanplay=showEnt;
@@ -1445,7 +1447,7 @@ function calcDmg(m,att,crit){
   if(m.isHeal)return{heal:Math.round(10+att.sta*1.5+d20())};
   if(m.risk&&Math.random()<m.risk)return{fumble:true};
   let base=Math.round(att[m.dmgStat]*m.dmgMult*(8+d20())/4);
-  if(m.isSig&&hasUpg('sigUpgrade'))base=Math.round(base*1.5);
+  if(m.isSig&&hasUpg('sigUpgrade'))base=Math.round(base*1.2);
   return{dmg:Math.round(base*(crit?1.5:1))};
 }
 function addLog(msg,cls){const log=document.getElementById('battLog');const e=document.createElement('div');e.className='log-l '+(cls||'');e.textContent=msg;log.prepend(e);}
@@ -1543,6 +1545,9 @@ function endMatch(won){
   if(won&&G.pendingMatch.opp&&G.pendingMatch.opp.isBoss){
     var bossKey=G.pendingMatch.opp.bossKey;
     if(bossKey){G.bossDefeated[bossKey]=true;}
+    if(bossKey==='freddy'&&!G.championships.includes('nightmare')){
+      G.championships.push('nightmare');
+    }
   }
   const pType=titleId?'title':wasRivalry?'rivalry':'regular';
   var purse=calcPurse(pType,won);
